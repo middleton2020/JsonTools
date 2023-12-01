@@ -32,14 +32,14 @@ namespace CM.JsonTools
         #endregion
 
         #region PassedDeligates
-        public delegate void DeligateMakeClass(string inpName);
-        public delegate void DeligateCloseClass(string inpName);
-        public delegate void DeligateMakeArray(string inpName);
-        public delegate void DeligateCloseArray(string inpName);
-        public delegate void DeligateSetBoolean(string inpName, bool inpValue);
-        public delegate void DeligateSetDecimal(string inpName, decimal inpValue);
-        public delegate void DeligateSetInteger(string inpName, int inpValue);
-        public delegate void DeligateSetString(string inpName, string inpValue);
+        public delegate object DeligateMakeClass(string inpName, object inpObject);
+        public delegate object DeligateCloseClass(string inpName, object inpObject);
+        public delegate object DeligateMakeArray(string inpName, object inpObject);
+        public delegate object DeligateCloseArray(string inpName, object inpObject);
+        public delegate object DeligateSetBoolean(string inpName, bool inpValue, object inpObject);
+        public delegate object DeligateSetDecimal(string inpName, decimal inpValue, object inpObject);
+        public delegate object DeligateSetInteger(string inpName, int inpValue, object inpObject);
+        public delegate object DeligateSetString(string inpName, string inpValue, object inpObject);
 
         DeligateMakeClass makeClass;
         DeligateCloseClass closeClass;
@@ -119,12 +119,16 @@ namespace CM.JsonTools
         #endregion
 
         #region Methods
-        public void ReadJson(string inpJsonObject)
+        public object ReadJson(string inpJsonObject)
         {
             try
             {
+                object tempObject = null;
+
                 BreakIntoNodes(inpJsonObject);
-                BuildClass();
+                tempObject = BuildClass();
+
+                return tempObject;
             }
             catch
             {
@@ -132,10 +136,12 @@ namespace CM.JsonTools
             }
         }
 
-        private void BuildClass()
+        private object BuildClass()
         {
             try
             {
+                object tempObject = null;
+
                 foreach (KeyValuePair<int, node> entry in nodeArray)
                 {
                     node CurrentNode = entry.Value;
@@ -145,34 +151,35 @@ namespace CM.JsonTools
                             // Ignore these, they have no value
                             break;
                         case DataType.Array:
-                            makeArray(entry.Value.fieldName);
+                            tempObject = makeArray(entry.Value.fieldName, tempObject);
                             break;
                         case DataType.ArrayEnd:
-                            closeArray(entry.Value.fieldName);
+                            tempObject = closeArray(entry.Value.fieldName, tempObject);
                             break;
                         case DataType.Class:
-                            makeClass(entry.Value.fieldName);
+                            tempObject = makeClass(entry.Value.fieldName, tempObject);
                             break;
                         case DataType.ClassEnd:
-                            closeClass(entry.Value.fieldName);
+                            tempObject = closeClass(entry.Value.fieldName, tempObject);
                             break;
                         case DataType.Boolean:
                             bool fieldBoolValue = Convert.ToBoolean(entry.Value.fieldValue);
-                            setBoolean(entry.Value.fieldName, fieldBoolValue);
+                            tempObject = setBoolean(entry.Value.fieldName, fieldBoolValue, tempObject);
                             break;
                         case DataType.Decimal:
                             decimal fieldDecimalValue = Convert.ToDecimal(entry.Value.fieldValue);
-                            setDecimal(entry.Value.fieldName, fieldDecimalValue);
+                            tempObject = setDecimal(entry.Value.fieldName, fieldDecimalValue, tempObject);
                             break;
                         case DataType.Integer:
                             int fieldIntegerValue = Convert.ToInt32(entry.Value.fieldValue);
-                            setInteger(entry.Value.fieldName, fieldIntegerValue);
+                            tempObject = setInteger(entry.Value.fieldName, fieldIntegerValue, tempObject);
                             break;
                         case DataType.String:
-                            setString(entry.Value.fieldName, entry.Value.fieldValue);
+                            tempObject = setString(entry.Value.fieldName, entry.Value.fieldValue, tempObject);
                             break;
                     }
                 }
+                return tempObject;
             }
             catch
             {

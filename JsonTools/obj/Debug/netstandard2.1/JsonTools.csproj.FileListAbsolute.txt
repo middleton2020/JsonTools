@@ -1,0 +1,10 @@
+C:\Users\colin\source\repos\JsonTools\JsonTools\bin\Debug\netstandard2.1\JsonTools.deps.json
+C:\Users\colin\source\repos\JsonTools\JsonTools\bin\Debug\netstandard2.1\JsonTools.dll
+C:\Users\colin\source\repos\JsonTools\JsonTools\bin\Debug\netstandard2.1\JsonTools.pdb
+C:\Users\colin\source\repos\JsonTools\JsonTools\obj\Debug\netstandard2.1\JsonTools.csproj.AssemblyReference.cache
+C:\Users\colin\source\repos\JsonTools\JsonTools\obj\Debug\netstandard2.1\JsonTools.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\colin\source\repos\JsonTools\JsonTools\obj\Debug\netstandard2.1\JsonTools.AssemblyInfoInputs.cache
+C:\Users\colin\source\repos\JsonTools\JsonTools\obj\Debug\netstandard2.1\JsonTools.AssemblyInfo.cs
+C:\Users\colin\source\repos\JsonTools\JsonTools\obj\Debug\netstandard2.1\JsonTools.csproj.CoreCompileInputs.cache
+C:\Users\colin\source\repos\JsonTools\JsonTools\obj\Debug\netstandard2.1\JsonTools.dll
+C:\Users\colin\source\repos\JsonTools\JsonTools\obj\Debug\netstandard2.1\JsonTools.pdb

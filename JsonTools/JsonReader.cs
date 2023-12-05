@@ -21,7 +21,8 @@ namespace CM.JsonTools
             Boolean,
             Decimal,
             Integer,
-            String
+            String,
+            Top
         }
 
         #region LocalVariables
@@ -32,14 +33,14 @@ namespace CM.JsonTools
         #endregion
 
         #region PassedDeligates
-        public delegate object DeligateMakeClass(string inpName, object inpObject);
-        public delegate object DeligateCloseClass(string inpName, object inpObject);
-        public delegate object DeligateMakeArray(string inpName, object inpObject);
-        public delegate object DeligateCloseArray(string inpName, object inpObject);
-        public delegate object DeligateSetBoolean(string inpName, bool inpValue, object inpObject);
-        public delegate object DeligateSetDecimal(string inpName, decimal inpValue, object inpObject);
-        public delegate object DeligateSetInteger(string inpName, int inpValue, object inpObject);
-        public delegate object DeligateSetString(string inpName, string inpValue, object inpObject);
+        public delegate object DeligateMakeClass(string inpName, object inpObject, string inpPath);
+        public delegate object DeligateCloseClass(string inpName, object inpObject, string inpPath);
+        public delegate object DeligateMakeArray(string inpName, object inpObject, string inpPath);
+        public delegate object DeligateCloseArray(string inpName, object inpObject, string inpPath);
+        public delegate object DeligateSetBoolean(string inpName, bool inpValue, object inpObject, string inpPath);
+        public delegate object DeligateSetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath);
+        public delegate object DeligateSetInteger(string inpName, int inpValue, object inpObject, string inpPath);
+        public delegate object DeligateSetString(string inpName, string inpValue, object inpObject, string inpPath);
 
         DeligateMakeClass makeClass;
         DeligateCloseClass closeClass;
@@ -94,6 +95,7 @@ namespace CM.JsonTools
             public string fieldValue;
             public DataType dataType;
             public int parentNode;
+            public string nodePath;
 
             /// <summary>
             /// Constructor, populating the relevant values.
@@ -119,16 +121,31 @@ namespace CM.JsonTools
         #endregion
 
         #region Methods
-        public object ReadJson(string inpJsonObject)
+        public string BuildPath(int inpInstance)
+        {
+            string nodePath = "";
+
+            if (inpInstance > 0)
+            {
+                nodePath = BuildPath(nodeArray[inpInstance].parentNode);
+                string tempFieldName = nodeArray[inpInstance].fieldName;
+                if(tempFieldName != "")
+                {
+                nodePath = nodePath + "." + tempFieldName;
+                }
+            }
+
+            return nodePath;
+        }
+
+        public object ReadJson(string inpJsonObject, object inpTempObject)
         {
             try
             {
-                object tempObject = null;
-
                 BreakIntoNodes(inpJsonObject);
-                tempObject = BuildClass();
+                inpTempObject = OutputData(inpTempObject);
 
-                return tempObject;
+                return inpTempObject;
             }
             catch
             {
@@ -136,12 +153,10 @@ namespace CM.JsonTools
             }
         }
 
-        private object BuildClass()
+        private object OutputData(object inpTempObject)
         {
             try
             {
-                object tempObject = null;
-
                 foreach (KeyValuePair<int, node> entry in nodeArray)
                 {
                     node CurrentNode = entry.Value;
@@ -150,36 +165,39 @@ namespace CM.JsonTools
                         case DataType.None:
                             // Ignore these, they have no value
                             break;
+                        case DataType.Top:
+                            // This is just the top level to ensure that each node has a parent
+                            break;
                         case DataType.Array:
-                            tempObject = makeArray(entry.Value.fieldName, tempObject);
+                            inpTempObject = makeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case DataType.ArrayEnd:
-                            tempObject = closeArray(entry.Value.fieldName, tempObject);
+                            inpTempObject = closeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case DataType.Class:
-                            tempObject = makeClass(entry.Value.fieldName, tempObject);
+                            inpTempObject = makeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case DataType.ClassEnd:
-                            tempObject = closeClass(entry.Value.fieldName, tempObject);
+                            inpTempObject = closeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case DataType.Boolean:
                             bool fieldBoolValue = Convert.ToBoolean(entry.Value.fieldValue);
-                            tempObject = setBoolean(entry.Value.fieldName, fieldBoolValue, tempObject);
+                            inpTempObject = setBoolean(entry.Value.fieldName, fieldBoolValue, inpTempObject, entry.Value.nodePath);
                             break;
                         case DataType.Decimal:
                             decimal fieldDecimalValue = Convert.ToDecimal(entry.Value.fieldValue);
-                            tempObject = setDecimal(entry.Value.fieldName, fieldDecimalValue, tempObject);
+                            inpTempObject = setDecimal(entry.Value.fieldName, fieldDecimalValue, inpTempObject, entry.Value.nodePath);
                             break;
                         case DataType.Integer:
                             int fieldIntegerValue = Convert.ToInt32(entry.Value.fieldValue);
-                            tempObject = setInteger(entry.Value.fieldName, fieldIntegerValue, tempObject);
+                            inpTempObject = setInteger(entry.Value.fieldName, fieldIntegerValue, inpTempObject, entry.Value.nodePath);
                             break;
                         case DataType.String:
-                            tempObject = setString(entry.Value.fieldName, entry.Value.fieldValue, tempObject);
+                            inpTempObject = setString(entry.Value.fieldName, entry.Value.fieldValue, inpTempObject, entry.Value.nodePath);
                             break;
                     }
                 }
-                return tempObject;
+                return inpTempObject;
             }
             catch
             {
@@ -194,7 +212,7 @@ namespace CM.JsonTools
         /// <param name="inpName">String, Name of node</param>
         /// <param name="inpValue">String, Value of node</param>
         /// <param name="inpParent">Int, instance number for the node that 'contains' this node</param>
-        /// <returns></returns>
+        /// <returns>The new node object</returns>
         public node addNode(DataType inpType, string inpName, string inpValue, int inpParent)
         {
             try
@@ -210,6 +228,7 @@ namespace CM.JsonTools
                     node NodeEntry = new node(nodeInstanceCounter, inpName, inpValue, inpType, inpParent);
                     nodeInstanceCounter += 1;
                     nodeArray.Add(NodeEntry.instance, NodeEntry);
+                    NodeEntry.nodePath = BuildPath(NodeEntry.instance);
                     return NodeEntry;
                 }
             }
@@ -232,12 +251,12 @@ namespace CM.JsonTools
 
                 // Default the variables.
                 DataMode Mode = DataMode.Name;
-                DataType Type = DataType.Array;
-                string Name = "Root";
+                DataType Type = DataType.Class;
+                string Name = "";
                 string Value = "";
                 // Control variables
                 int Parent = 1;
-                node ParentNode = addNode(DataType.Array, "TopLevel", "", 0);
+                node ParentNode = addNode(DataType.Top, "", "", 0);
                 Boolean InString = false;
                 node currentNode = null;
 

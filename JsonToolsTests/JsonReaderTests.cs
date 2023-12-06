@@ -16,7 +16,41 @@ namespace CM.JsonTools.Tests
         public void SimpleMakeJsonTest()
         {
             initializeText();
-            string testJson = "{\"id\":\"Bibble\"}";
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":\"Test Name\""
+                            + "}";
+            string resultJson = "";
+
+            JsonReader testReader = new JsonReader(makeClass,
+                                                    closeClass,
+                                                    makeArray,
+                                                    closeArray,
+                                                    setBoolean,
+                                                    setDecimal,
+                                                    setInteger,
+                                                    setString);
+            resultJson = (string)testReader.ReadJson(testJson, "");
+
+            Assert.AreEqual(testJson, resultJson, false);
+        }
+
+        [TestMethod()]
+        public void BasicMakeJsonTest()
+        {
+            initializeText();
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":\"Test Name\""
+                            + ","
+                            + "\"parcels\":1"
+                            + ","
+                            + "\"value\":11.50"
+                            + ","
+                            + "\"saturdayDelivery\":true"
+                            +"}";
             string resultJson = "";
 
             JsonReader testReader = new JsonReader(makeClass,
@@ -214,6 +248,31 @@ namespace CM.JsonTools.Tests
         public void SimpleMakeClassTest()
         {
             initializeClass();
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":\"Test Name\""
+                            + "}";
+            Order resultOrder = null;
+
+            JsonReader testReader = new JsonReader(makeClass,
+                                                    closeClass,
+                                                    makeArray,
+                                                    closeArray,
+                                                    setBoolean,
+                                                    setDecimal,
+                                                    setInteger,
+                                                    setString);
+            resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
+
+            Assert.AreEqual("Bibble", resultOrder.Id, false);
+            Assert.AreEqual("Test Name", resultOrder.Name, false);
+        }
+
+        [TestMethod()]
+        public void BasicMakeClassTest()
+        {
+            initializeText();
             string testJson = "{\"id\":\"Bibble\"}";
             Order resultOrder = null;
 
@@ -228,6 +287,11 @@ namespace CM.JsonTools.Tests
             resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
 
             Assert.AreEqual("Bibble", resultOrder.Id, false);
+            Assert.AreEqual("Test Name", resultOrder.Name, false);
+            Assert.AreEqual(1, resultOrder.Parcels);
+            Assert.AreEqual(11.50, resultOrder.Value);
+            Assert.AreEqual(true, resultOrder.SaturdayDelivery);
+
         }
 
         [TestMethod()]
@@ -393,7 +457,7 @@ namespace CM.JsonTools.Tests
 
             initializeText();
             string testJson = "{\"id\":\"Bibble\"}";
-            string resultJson = "";
+            Order resultOrder = null;
 
             JsonReader testReader = new JsonReader(makeClass,
                                                     closeClass,
@@ -403,9 +467,16 @@ namespace CM.JsonTools.Tests
                                                     setDecimal,
                                                     setInteger,
                                                     setString);
-            resultJson = (string)testReader.ReadJson(testJson, "");
+            resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
 
-            Assert.AreEqual(testJson, resultJson, false);
+            Assert.AreEqual("Bibble", resultOrder.Id, false);
+            Assert.AreEqual("Test Name", resultOrder.Name, false);
+            Assert.AreEqual(1, resultOrder.Parcels);
+            Assert.AreEqual(11.50, resultOrder.Value);
+            Assert.AreEqual(true, resultOrder.SaturdayDelivery);
+            //public int CurrentItem = 0;
+            //public List<Items> ItemsList = new List<Items>();
+
         }
 
         #region DeligateVariables
@@ -463,7 +534,7 @@ namespace CM.JsonTools.Tests
         {
             string tempString = (string)inpObject;
             tempString = AddComma(tempString);
-            tempString += "\"" + inpName + "\":" + Convert.ToString(inpValue);
+            tempString += "\"" + inpName + "\":" + Convert.ToString(inpValue).ToLower();
             return tempString;
         }
         public object JsonSetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath)

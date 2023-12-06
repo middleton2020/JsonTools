@@ -73,14 +73,21 @@ namespace CM.JsonTools
                           DeligateSetInteger inpSetInteger,
                           DeligateSetString inpSetString)
         {
-            makeClass = inpMakeClass;
-            closeClass = inpCloseClass;
-            makeArray = inpMakeArray;
-            closeArray = inpCloseArray;
-            setBoolean = inpSetBoolean;
-            setDecimal = inpSetDecimal;
-            setInteger = inpSetInteger;
-            setString = inpSetString;
+            try
+            {
+                makeClass = inpMakeClass;
+                closeClass = inpCloseClass;
+                makeArray = inpMakeArray;
+                closeArray = inpCloseArray;
+                setBoolean = inpSetBoolean;
+                setDecimal = inpSetDecimal;
+                setInteger = inpSetInteger;
+                setString = inpSetString;
+            }
+            catch
+            {
+                throw;
+            }
         }
         #endregion
 
@@ -123,19 +130,26 @@ namespace CM.JsonTools
         #region Methods
         public string BuildPath(int inpInstance)
         {
-            string nodePath = "";
-
-            if (inpInstance > 0)
+            try
             {
-                nodePath = BuildPath(nodeArray[inpInstance].parentNode);
-                string tempFieldName = nodeArray[inpInstance].fieldName;
-                if(tempFieldName != "")
-                {
-                nodePath = nodePath + "." + tempFieldName;
-                }
-            }
+                string nodePath = "";
 
-            return nodePath;
+                if (inpInstance > 0)
+                {
+                    nodePath = BuildPath(nodeArray[inpInstance].parentNode);
+                    string tempFieldName = nodeArray[inpInstance].fieldName;
+                    if (tempFieldName != "")
+                    {
+                        nodePath = nodePath + "." + tempFieldName;
+                    }
+                }
+
+                return nodePath;
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         public object ReadJson(string inpJsonObject, object inpTempObject)
@@ -238,6 +252,27 @@ namespace CM.JsonTools
             }
         }
 
+        private DataType BooleanCheck(DataType inpType, string inpValue)
+        {
+            try
+            {
+                // We've finished reading the text. If there are no speach marks, but the value is
+                if (inpType == DataType.Integer)
+                {
+                    if (inpValue.ToLower() == Boolean.TrueString.ToLower() ||
+                        inpValue.ToLower() == Boolean.FalseString.ToLower())
+                    {
+                        inpType = DataType.Boolean;
+                    }
+                }
+                return inpType;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         /// <summary>
         /// Split the JSON into a series of nodes, from which we can build our data classes.
         /// </summary>
@@ -310,20 +345,15 @@ namespace CM.JsonTools
                             // The colon indicates that we're moving from name to value.
                             case ':':
                                 Mode = DataMode.Value;
+                                Type = DataType.Integer;    // Default to this.
                                 Value = "";
                                 break;
 
                             // Commas separate the elements (i.e. nodes).
                             case ',':
                                 // We've finished reading the text. If there are no speach marks, but the value is
-                                if (Type == DataType.Integer)
-                                {
-                                    if (Value == Boolean.TrueString ||
-                                        Value == Boolean.FalseString)
-                                    {
-                                        Type = DataType.Boolean;
-                                    }
-                                }
+                                Type = BooleanCheck(Type, Value);
+
                                 currentNode = addNode(Type, Name, Value, Parent);
                                 Mode = DataMode.Name;
                                 Name = "";
@@ -344,6 +374,9 @@ namespace CM.JsonTools
 
                             // and close that JSON group.
                             case '}':
+                                // We've finished reading the text. If there are no speach marks, but the value is
+                                Type = BooleanCheck(Type, Value);
+
                                 currentNode = addNode(Type, Name, Value, Parent);
                                 Type = DataType.ClassEnd;
                                 Name = "";
@@ -364,6 +397,9 @@ namespace CM.JsonTools
 
                             // Finish processing the array.
                             case ']':
+                                // We've finished reading the text. If there are no speach marks, but the value is
+                                Type = BooleanCheck(Type, Value);
+
                                 currentNode = addNode(Type, Name, Value, Parent);
                                 Type = DataType.ArrayEnd;
                                 Name = "";

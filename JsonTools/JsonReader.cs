@@ -119,8 +119,8 @@ namespace CM.JsonTools
                 int inpParent)
             {
                 instance = inpInstance;
-                fieldName = inpName;
-                fieldValue = inpValue;
+                fieldName = inpName.Trim();
+                fieldValue = inpValue.Trim();
                 dataType = inpType;
                 parentNode = inpParent;
             }
@@ -140,7 +140,18 @@ namespace CM.JsonTools
                     string tempFieldName = nodeArray[inpInstance].fieldName;
                     if (tempFieldName != "")
                     {
-                        nodePath = nodePath + "." + tempFieldName;
+                        if (nodePath == "")
+                        {
+                            nodePath = tempFieldName;
+                        }
+                        else if(tempFieldName == "")
+                        {
+                            nodePath = nodePath;
+                        }
+                        else
+                        {
+                            nodePath = nodePath + "." + tempFieldName;
+                        }
                     }
                 }
 

@@ -5,31 +5,8 @@ namespace CM.JsonTools
 {
     public class JsonReader
     {
-        public enum DataMode
-        {
-            None,
-            Name,
-            Value
-        }
-        public enum DataType
-        {
-            None,
-            Array,
-            ArrayEnd,
-            Class,
-            ClassEnd,
-            Boolean,
-            Decimal,
-            Integer,
-            String,
-            Top
-        }
-
         #region LocalVariables
-        // List of nodes that we've created.
-        Dictionary<int, node> nodeArray = new Dictionary<int, node>();
-        // Counter of what the next index number for the node.
-        int nodeInstanceCounter = 1;
+        private NodeManager nodeManager;
         #endregion
 
         #region PassedDeligates
@@ -91,192 +68,16 @@ namespace CM.JsonTools
         }
         #endregion
 
-        #region SubClasses
-        /// <summary>
-        /// A node of the JSON holds a single data item, be it a 'class', an array or a field.
-        /// </summary>
-        public class node
-        {
-            public int instance;
-            public string fieldName;
-            public string fieldValue;
-            public DataType dataType;
-            public int parentNode;
-            public string nodePath;
-
-            /// <summary>
-            /// Constructor, populating the relevant values.
-            /// </summary>
-            /// <param name="inpInstance">Int, unique number for the node.</param>
-            /// <param name="inpName">String, the name of the node element.</param>
-            /// <param name="inpValue">String, the value of the node element.</param>
-            /// <param name="inpType">DataType enum, what is the data type?</param>
-            /// <param name="inpParent">Int, instance number for the node that 'contains' this node.</param>
-            public node(int inpInstance,
-                string inpName,
-                string inpValue,
-                DataType inpType,
-                int inpParent)
-            {
-                instance = inpInstance;
-                fieldName = inpName.Trim();
-                fieldValue = inpValue.Trim();
-                dataType = inpType;
-                parentNode = inpParent;
-            }
-        }
-        #endregion
-
         #region Methods
-        public string BuildPath(int inpInstance)
-        {
-            try
-            {
-                string nodePath = "";
-
-                if (inpInstance > 0)
-                {
-                    nodePath = BuildPath(nodeArray[inpInstance].parentNode);
-                    string tempFieldName = nodeArray[inpInstance].fieldName;
-                    if (tempFieldName != "")
-                    {
-                        if (nodePath == "")
-                        {
-                            nodePath = tempFieldName;
-                        }
-                        else if(tempFieldName == "")
-                        {
-                            nodePath = nodePath;
-                        }
-                        else
-                        {
-                            nodePath = nodePath + "." + tempFieldName;
-                        }
-                    }
-                }
-
-                return nodePath;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
         public object ReadJson(string inpJsonObject, object inpTempObject)
         {
             try
             {
+                nodeManager = new NodeManager();
                 BreakIntoNodes(inpJsonObject);
                 inpTempObject = OutputData(inpTempObject);
 
                 return inpTempObject;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private object OutputData(object inpTempObject)
-        {
-            try
-            {
-                foreach (KeyValuePair<int, node> entry in nodeArray)
-                {
-                    node CurrentNode = entry.Value;
-                    switch (CurrentNode.dataType)
-                    {
-                        case DataType.None:
-                            // Ignore these, they have no value
-                            break;
-                        case DataType.Top:
-                            // This is just the top level to ensure that each node has a parent
-                            break;
-                        case DataType.Array:
-                            inpTempObject = makeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case DataType.ArrayEnd:
-                            inpTempObject = closeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case DataType.Class:
-                            inpTempObject = makeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case DataType.ClassEnd:
-                            inpTempObject = closeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case DataType.Boolean:
-                            bool fieldBoolValue = Convert.ToBoolean(entry.Value.fieldValue);
-                            inpTempObject = setBoolean(entry.Value.fieldName, fieldBoolValue, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case DataType.Decimal:
-                            decimal fieldDecimalValue = Convert.ToDecimal(entry.Value.fieldValue);
-                            inpTempObject = setDecimal(entry.Value.fieldName, fieldDecimalValue, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case DataType.Integer:
-                            int fieldIntegerValue = Convert.ToInt32(entry.Value.fieldValue);
-                            inpTempObject = setInteger(entry.Value.fieldName, fieldIntegerValue, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case DataType.String:
-                            inpTempObject = setString(entry.Value.fieldName, entry.Value.fieldValue, inpTempObject, entry.Value.nodePath);
-                            break;
-                    }
-                }
-                return inpTempObject;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Add a new node to the array.
-        /// </summary>
-        /// <param name="inpType">DataType Enum. Type of node</param>
-        /// <param name="inpName">String, Name of node</param>
-        /// <param name="inpValue">String, Value of node</param>
-        /// <param name="inpParent">Int, instance number for the node that 'contains' this node</param>
-        /// <returns>The new node object</returns>
-        public node addNode(DataType inpType, string inpName, string inpValue, int inpParent)
-        {
-            try
-            {
-                if (inpType == DataType.None)
-                {
-                    // If no data type has been provided, then return the current node.
-                    return nodeArray[nodeInstanceCounter - 1];
-                }
-                else
-                {
-                    // Create a new node, add it to the nodeArray and return the new node.
-                    node NodeEntry = new node(nodeInstanceCounter, inpName, inpValue, inpType, inpParent);
-                    nodeInstanceCounter += 1;
-                    nodeArray.Add(NodeEntry.instance, NodeEntry);
-                    NodeEntry.nodePath = BuildPath(NodeEntry.instance);
-                    return NodeEntry;
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private DataType BooleanCheck(DataType inpType, string inpValue)
-        {
-            try
-            {
-                // We've finished reading the text. If there are no speach marks, but the value is
-                if (inpType == DataType.Integer)
-                {
-                    if (inpValue.ToLower() == Boolean.TrueString.ToLower() ||
-                        inpValue.ToLower() == Boolean.FalseString.ToLower())
-                    {
-                        inpType = DataType.Boolean;
-                    }
-                }
-                return inpType;
             }
             catch
             {
@@ -296,15 +97,15 @@ namespace CM.JsonTools
                 const char escapeCharacter = (char)92;
 
                 // Default the variables.
-                DataMode Mode = DataMode.Name;
-                DataType Type = DataType.Class;
+                NodeManager.DataMode Mode = NodeManager.DataMode.Name;
+                NodeManager.DataType Type = NodeManager.DataType.Class;
                 string Name = "";
                 string Value = "";
                 // Control variables
                 int Parent = 1;
-                node ParentNode = addNode(DataType.Top, "", "", 0);
+                NodeManager.node ParentNode = nodeManager.addNode(NodeManager.DataType.Top, "", "", 0);
                 Boolean InString = false;
-                node currentNode = null;
+                NodeManager.node currentNode = null;
 
                 // Break the JSON up into an array of characters.
                 char[] byCharacters = inpJsonObject.ToCharArray();
@@ -322,11 +123,11 @@ namespace CM.JsonTools
                         }
                         else
                         {
-                            if (Mode == DataMode.Name)
+                            if (Mode == NodeManager.DataMode.Name)
                             {
                                 Name += letter;
                             }
-                            else if (Mode == DataMode.Value)
+                            else if (Mode == NodeManager.DataMode.Value)
                             {
                                 Value += letter;
                             }
@@ -342,21 +143,21 @@ namespace CM.JsonTools
 
                             // Open a string.
                             case '"':
-                                if (Mode == DataMode.Value)
+                                if (Mode == NodeManager.DataMode.Value)
                                 {
-                                    Type = DataType.String;
+                                    Type = NodeManager.DataType.String;
                                 }
                                 else
                                 {
-                                    Mode = DataMode.Name;
+                                    Mode = NodeManager.DataMode.Name;
                                 }
                                 InString = true;
                                 break;
 
                             // The colon indicates that we're moving from name to value.
                             case ':':
-                                Mode = DataMode.Value;
-                                Type = DataType.Integer;    // Default to this.
+                                Mode = NodeManager.DataMode.Value;
+                                Type = NodeManager.DataType.Integer;    // Default to this.
                                 Value = "";
                                 break;
 
@@ -365,21 +166,21 @@ namespace CM.JsonTools
                                 // We've finished reading the text. If there are no speach marks, but the value is
                                 Type = BooleanCheck(Type, Value);
 
-                                currentNode = addNode(Type, Name, Value, Parent);
-                                Mode = DataMode.Name;
+                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                Mode = NodeManager.DataMode.Name;
                                 Name = "";
                                 Value = "";
                                 break;
 
                             // Start processing a JSON group.
                             case '{':
-                                Type = DataType.Class;
+                                Type = NodeManager.DataType.Class;
                                 Value = "";
-                                currentNode = addNode(Type, Name, Value, Parent);
+                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
                                 Parent = currentNode.instance;
-                                ParentNode = nodeArray[Parent];
-                                Mode = DataMode.Name;
-                                Type = DataType.Integer;
+                                ParentNode = nodeManager.nodeArray[Parent];
+                                Mode = NodeManager.DataMode.Name;
+                                Type = NodeManager.DataType.Integer;
                                 Name = "";
                                 break;
 
@@ -388,21 +189,21 @@ namespace CM.JsonTools
                                 // We've finished reading the text. If there are no speach marks, but the value is
                                 Type = BooleanCheck(Type, Value);
 
-                                currentNode = addNode(Type, Name, Value, Parent);
-                                Type = DataType.ClassEnd;
+                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                Type = NodeManager.DataType.ClassEnd;
                                 Name = "";
                                 Value = "";
                                 break;
 
                             // Start processing an array of data.
                             case '[':
-                                Type = DataType.Array;
+                                Type = NodeManager.DataType.Array;
                                 Value = "";
-                                currentNode = addNode(Type, Name, Value, Parent);
+                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
                                 Parent = currentNode.instance;
-                                ParentNode = nodeArray[Parent];
-                                Mode = DataMode.Name;
-                                Type = DataType.Integer;
+                                ParentNode = nodeManager.nodeArray[Parent];
+                                Mode = NodeManager.DataMode.Name;
+                                Type = NodeManager.DataType.Integer;
                                 Name = "";
                                 break;
 
@@ -411,35 +212,35 @@ namespace CM.JsonTools
                                 // We've finished reading the text. If there are no speach marks, but the value is
                                 Type = BooleanCheck(Type, Value);
 
-                                currentNode = addNode(Type, Name, Value, Parent);
-                                Type = DataType.ArrayEnd;
+                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                Type = NodeManager.DataType.ArrayEnd;
                                 Name = "";
                                 Value = "";
                                 break;
 
                             // If we finde a '.' in an integer, change it to a decimal.
                             case '.':
-                                if (Mode == DataMode.Name)
+                                if (Mode == NodeManager.DataMode.Name)
                                 {
                                     Name += letter;
                                 }
-                                else if (Mode == DataMode.Value)
+                                else if (Mode == NodeManager.DataMode.Value)
                                 {
                                     Value += letter;
-                                    if (Type == DataType.Integer)
+                                    if (Type == NodeManager.DataType.Integer)
                                     {
-                                        Type = DataType.Decimal;
+                                        Type = NodeManager.DataType.Decimal;
                                     }
                                 }
                                 break;
 
                             // Any other character is just added to the current details.
                             default:
-                                if (Mode == DataMode.Name)
+                                if (Mode == NodeManager.DataMode.Name)
                                 {
                                     Name += letter;
                                 }
-                                else if (Mode == DataMode.Value)
+                                else if (Mode == NodeManager.DataMode.Value)
                                 {
                                     Value += letter;
                                 }
@@ -448,16 +249,89 @@ namespace CM.JsonTools
                     }
 
                     // If we're closing a JSON element or Array, process that before moving onto the next letter.
-                    if (Type == DataType.ClassEnd || Type == DataType.ArrayEnd)
+                    if (Type == NodeManager.DataType.ClassEnd || Type == NodeManager.DataType.ArrayEnd)
                     {
-                        ParentNode = nodeArray[Parent];
+                        ParentNode = nodeManager.nodeArray[Parent];
                         Name = ParentNode.fieldName;
-                        addNode(Type, Name, Value, Parent);
+                        nodeManager.addNode(Type, Name, Value, Parent);
                         Parent = ParentNode.parentNode;
-                        Mode = DataMode.Name;
-                        Type = DataType.None;
+                        Mode = NodeManager.DataMode.Name;
+                        Type = NodeManager.DataType.None;
                     }
                 }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private object OutputData(object inpTempObject)
+        {
+            try
+            {
+                foreach (KeyValuePair<int, NodeManager.node> entry in nodeManager.nodeArray)
+                {
+                    NodeManager.node CurrentNode = entry.Value;
+                    switch (CurrentNode.dataType)
+                    {
+                        case NodeManager.DataType.None:
+                            // Ignore these, they have no value
+                            break;
+                        case NodeManager.DataType.Top:
+                            // This is just the top level to ensure that each node has a parent
+                            break;
+                        case NodeManager.DataType.Array:
+                            inpTempObject = makeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
+                            break;
+                        case NodeManager.DataType.ArrayEnd:
+                            inpTempObject = closeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
+                            break;
+                        case NodeManager.DataType.Class:
+                            inpTempObject = makeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
+                            break;
+                        case NodeManager.DataType.ClassEnd:
+                            inpTempObject = closeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
+                            break;
+                        case NodeManager.DataType.Boolean:
+                            bool fieldBoolValue = Convert.ToBoolean(entry.Value.fieldValue);
+                            inpTempObject = setBoolean(entry.Value.fieldName, fieldBoolValue, inpTempObject, entry.Value.nodePath);
+                            break;
+                        case NodeManager.DataType.Decimal:
+                            decimal fieldDecimalValue = Convert.ToDecimal(entry.Value.fieldValue);
+                            inpTempObject = setDecimal(entry.Value.fieldName, fieldDecimalValue, inpTempObject, entry.Value.nodePath);
+                            break;
+                        case NodeManager.DataType.Integer:
+                            int fieldIntegerValue = Convert.ToInt32(entry.Value.fieldValue);
+                            inpTempObject = setInteger(entry.Value.fieldName, fieldIntegerValue, inpTempObject, entry.Value.nodePath);
+                            break;
+                        case NodeManager.DataType.String:
+                            inpTempObject = setString(entry.Value.fieldName, entry.Value.fieldValue, inpTempObject, entry.Value.nodePath);
+                            break;
+                    }
+                }
+                return inpTempObject;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private NodeManager.DataType BooleanCheck(NodeManager.DataType inpType, string inpValue)
+        {
+            try
+            {
+                // We've finished reading the text. If there are no speach marks, but the value is
+                if (inpType == NodeManager.DataType.Integer)
+                {
+                    if (inpValue.ToLower() == Boolean.TrueString.ToLower() ||
+                        inpValue.ToLower() == Boolean.FalseString.ToLower())
+                    {
+                        inpType = NodeManager.DataType.Boolean;
+                    }
+                }
+                return inpType;
             }
             catch
             {

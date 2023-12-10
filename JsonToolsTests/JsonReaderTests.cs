@@ -12,6 +12,10 @@ namespace CM.JsonTools.Tests
     [TestClass()]
     public class JsonReaderTests
     {
+        #region MakeStringTests
+        /// <summary>
+        /// A very simple test, just strings. The output is written to a JSON.
+        /// </summary>
         [TestMethod()]
         public void SimpleMakeJsonTest()
         {
@@ -36,6 +40,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// A moderately complex test, all data types. The output is written to a JSON.
+        /// </summary>
         [TestMethod()]
         public void BasicMakeJsonTest()
         {
@@ -66,6 +73,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// A very simple test, just strings. The output is written to a JSON.
+        /// </summary>
         [TestMethod()]
         public void ComplexMakeJsonTest()
         {
@@ -110,7 +120,12 @@ namespace CM.JsonTools.Tests
 
             Assert.AreEqual(testJson, resultJson, false);
         }
+        #endregion
 
+        #region MakeClassTests
+        /// <summary>
+        /// A complex test with arrays and various data types. The output is written to a Class (see below).
+        /// </summary>
         [TestMethod()]
         public void SimpleMakeClassTest()
         {
@@ -136,6 +151,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual("Test Name", resultOrder.Name, false);
         }
 
+        /// <summary>
+        /// A moderately complex test, all data types. The output is written to a JSON.
+        /// </summary>
         [TestMethod()]
         public void BasicMakeClassTest()
         {
@@ -171,6 +189,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(true, resultOrder.SaturdayDelivery);
         }
 
+        /// <summary>
+        /// A complex test with arrays and various data types. The output is written to a JSON.
+        /// </summary>
         [TestMethod()]
         public void ComplexMakeClassTest()
         {
@@ -223,6 +244,7 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual("22 Sphere", resultOrder.ItemsList[1].ItemName);
             Assert.AreEqual("Alphabet", resultOrder.ItemsList[2].ItemName);
         }
+        #endregion
 
         #region DeligateVariables
         JsonReader.DeligateMakeClass makeClass;
@@ -236,16 +258,28 @@ namespace CM.JsonTools.Tests
         #endregion
 
         #region JsonMethods
+        /// <summary>
+        /// Decide if we need to add a comma to the JSON string.
+        /// </summary>
+        /// <param name="inpTempString">JSON string that we're building.</param>
+        /// <returns>inpTempString, with the comma added.</returns>
         private string AddComma(string inpTempString)
         {
             if (!inpTempString.EndsWith("{") &&
-                            !inpTempString.EndsWith("[") &&
-                            inpTempString != "")
+                !inpTempString.EndsWith("[") &&
+                inpTempString != "")
             {
                 inpTempString += ",";
             }
             return inpTempString;
         }
+        /// <summary>
+        /// Open a group/class in the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonMakeClass(string inpName, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
@@ -255,12 +289,26 @@ namespace CM.JsonTools.Tests
             tempString += "{";
             return tempString;
         }
+        /// <summary>
+        /// Closes an group/class in the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonCloseClass(string inpName, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
             tempString += "}";
             return tempString;
         }
+        /// <summary>
+        /// Open an array in the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonMakeArray(string inpName, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
@@ -269,12 +317,27 @@ namespace CM.JsonTools.Tests
             tempString += "[";
             return tempString;
         }
+        /// <summary>
+        /// Closes an array in the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonCloseArray(string inpName, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
             tempString += "]";
             return tempString;
         }
+        /// <summary>
+        /// Add a boolean property to the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonSetBoolean(string inpName, bool inpValue, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
@@ -282,6 +345,14 @@ namespace CM.JsonTools.Tests
             tempString += "\"" + inpName + "\":" + Convert.ToString(inpValue).ToLower();
             return tempString;
         }
+        /// <summary>
+        /// Add a decimal property to the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonSetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
@@ -289,6 +360,14 @@ namespace CM.JsonTools.Tests
             tempString += "\"" + inpName + "\":" + Convert.ToString(inpValue);
             return tempString;
         }
+        /// <summary>
+        /// Add a integer property to the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonSetInteger(string inpName, int inpValue, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
@@ -296,6 +375,14 @@ namespace CM.JsonTools.Tests
             tempString += "\"" + inpName + "\":" + Convert.ToString(inpValue);
             return tempString;
         }
+        /// <summary>
+        /// Add a string property to the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object JsonSetString(string inpName, string inpValue, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
@@ -304,6 +391,9 @@ namespace CM.JsonTools.Tests
             return tempString;
         }
 
+        /// <summary>
+        /// Setup the deligates to output to a JSON.
+        /// </summary>
         private void initializeText()
         {
             makeClass = JsonMakeClass;
@@ -318,6 +408,13 @@ namespace CM.JsonTools.Tests
         #endregion
 
         #region ClassMethods
+        /// <summary>
+        /// Open a group/class in the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassMakeClass(string inpName, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
@@ -334,20 +431,49 @@ namespace CM.JsonTools.Tests
 
             return tempOrder;
         }
+        /// <summary>
+        /// Closes an group/class in the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassCloseClass(string inpName, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
 
             return tempOrder;
         }
+        /// <summary>
+        /// Open an array in the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassMakeArray(string inpName, object inpObject, string inpPath)
         {
             return inpObject;
         }
+        /// <summary>
+        /// Close an array in the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassCloseArray(string inpName, object inpObject, string inpPath)
         {
             return inpObject;
         }
+        /// <summary>
+        /// Add a boolean property to the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassSetBoolean(string inpName, bool inpValue, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
@@ -355,6 +481,14 @@ namespace CM.JsonTools.Tests
 
             return tempOrder;
         }
+        /// <summary>
+        /// Add a decimal property to the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassSetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
@@ -362,6 +496,14 @@ namespace CM.JsonTools.Tests
 
             return tempOrder;
         }
+        /// <summary>
+        /// Add a integer property to the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassSetInteger(string inpName, int inpValue, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
@@ -369,6 +511,14 @@ namespace CM.JsonTools.Tests
 
             return tempOrder;
         }
+        /// <summary>
+        /// Add a string property to the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
         public object ClassSetString(string inpName, string inpValue, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
@@ -392,6 +542,9 @@ namespace CM.JsonTools.Tests
             return tempOrder;
         }
 
+        /// <summary>
+        /// Setup the deligates to output to a custom class.
+        /// </summary>
         private void initializeClass()
         {
             makeClass = ClassMakeClass;
@@ -404,6 +557,9 @@ namespace CM.JsonTools.Tests
             setString = ClassSetString;
         }
 
+        /// <summary>
+        /// Dummy data class to populate.
+        /// </summary>
         public class Order
         {
             public string Id = "";

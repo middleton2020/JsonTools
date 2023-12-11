@@ -69,12 +69,21 @@ namespace CM.JsonTools
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Read in the JSON object and return the data in the specified output. Uses to deligates to build the output.
+        /// </summary>
+        /// <param name="inpJsonObject">The JSON string to examine and split.</param>
+        /// <param name="inpTempObject">The object that we are updating. This must be initialised before being passed in.</param>
+        /// <returns>inpTempObject once all data has been written to it.</returns>
         public object ReadJson(string inpJsonObject, object inpTempObject)
         {
             try
             {
+                // Prepare the node tools/storage.
                 nodeManager = new NodeManager();
+                // Populate the Node records.
                 BreakIntoNodes(inpJsonObject);
+                // Read the Node records to build the requested output.
                 inpTempObject = OutputData(inpTempObject);
 
                 return inpTempObject;
@@ -266,6 +275,11 @@ namespace CM.JsonTools
             }
         }
 
+        /// <summary>
+        /// Read the Node data and export it to the inpTempObject using the deligates to apply the right structure.
+        /// </summary>
+        /// <param name="inpTempObject">The object that we are populating.</param>
+        /// <returns>inpTempObject, now full of data.</returns>
         private object OutputData(object inpTempObject)
         {
             try
@@ -318,6 +332,12 @@ namespace CM.JsonTools
             }
         }
 
+        /// <summary>
+        /// Is this node a boolean or an integer?
+        /// </summary>
+        /// <param name="inpType">Pass Node.type in here.</param>
+        /// <param name="inpValue">Pass Node.value in here.</param>
+        /// <returns>Returns Node.type, updated as a boolean if appropriate.</returns>
         private NodeManager.DataType BooleanCheck(NodeManager.DataType inpType, string inpValue)
         {
             try

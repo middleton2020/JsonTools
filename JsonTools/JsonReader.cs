@@ -68,7 +68,7 @@ namespace CM.JsonTools
         }
         #endregion
 
-        #region Methods
+        #region PublicMethods
         /// <summary>
         /// Read in the JSON object and return the data in the specified output. Uses to deligates to build the output.
         /// </summary>
@@ -93,7 +93,9 @@ namespace CM.JsonTools
                 throw;
             }
         }
+        #endregion
 
+        #region PrivateMethods
         /// <summary>
         /// Split the JSON into a series of nodes, from which we can build our data classes.
         /// </summary>
@@ -107,7 +109,7 @@ namespace CM.JsonTools
 
                 // Default the variables.
                 NodeManager.DataMode Mode = NodeManager.DataMode.Name;
-                NodeManager.DataType Type = NodeManager.DataType.Class;
+                NodeManager.DataType Type = NodeManager.DataType.Object;
                 string Name = "";
                 string Value = "";
                 // Control variables
@@ -183,7 +185,7 @@ namespace CM.JsonTools
 
                             // Start processing a JSON group.
                             case '{':
-                                Type = NodeManager.DataType.Class;
+                                Type = NodeManager.DataType.Object;
                                 Value = "";
                                 currentNode = nodeManager.addNode(Type, Name, Value, Parent);
                                 Parent = currentNode.instance;
@@ -199,7 +201,7 @@ namespace CM.JsonTools
                                 Type = BooleanCheck(Type, Value);
 
                                 currentNode = nodeManager.addNode(Type, Name, Value, Parent);
-                                Type = NodeManager.DataType.ClassEnd;
+                                Type = NodeManager.DataType.ObjectClose;
                                 Name = "";
                                 Value = "";
                                 break;
@@ -222,7 +224,7 @@ namespace CM.JsonTools
                                 Type = BooleanCheck(Type, Value);
 
                                 currentNode = nodeManager.addNode(Type, Name, Value, Parent);
-                                Type = NodeManager.DataType.ArrayEnd;
+                                Type = NodeManager.DataType.ArrayClose;
                                 Name = "";
                                 Value = "";
                                 break;
@@ -258,7 +260,7 @@ namespace CM.JsonTools
                     }
 
                     // If we're closing a JSON element or Array, process that before moving onto the next letter.
-                    if (Type == NodeManager.DataType.ClassEnd || Type == NodeManager.DataType.ArrayEnd)
+                    if (Type == NodeManager.DataType.ObjectClose || Type == NodeManager.DataType.ArrayClose)
                     {
                         ParentNode = nodeManager.nodeArray[Parent];
                         Name = ParentNode.fieldName;
@@ -298,13 +300,13 @@ namespace CM.JsonTools
                         case NodeManager.DataType.Array:
                             inpTempObject = makeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
-                        case NodeManager.DataType.ArrayEnd:
+                        case NodeManager.DataType.ArrayClose:
                             inpTempObject = closeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
-                        case NodeManager.DataType.Class:
+                        case NodeManager.DataType.Object:
                             inpTempObject = makeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
-                        case NodeManager.DataType.ClassEnd:
+                        case NodeManager.DataType.ObjectClose:
                             inpTempObject = closeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case NodeManager.DataType.Boolean:

@@ -16,9 +16,9 @@ namespace CM.JsonTools
         {
             None,
             Array,
-            ArrayEnd,
-            Class,
-            ClassEnd,
+            ArrayClose,
+            Object,
+            ObjectClose,
             Boolean,
             Decimal,
             Integer,

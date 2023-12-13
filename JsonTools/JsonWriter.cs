@@ -11,6 +11,10 @@ namespace CM.JsonTools
         private int currentParent = 0;
         #endregion
 
+        #region Constructors
+        /// <summary>
+        /// Preprare the JsonWriter to recieve instructions.
+        /// </summary>
         public JsonWriter()
         {
             try
@@ -26,7 +30,130 @@ namespace CM.JsonTools
                 throw;
             }
         }
+        #endregion
 
+        #region StructureNodes
+        /// <summary>
+        /// Create a node to open an object. Object will have no name.
+        /// </summary>
+        public void OpenObject()
+        {
+            try
+            {
+                OpenObject("");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Create a node to open an object.
+        /// </summary>
+        /// <param name="inpName">Name to give to the array object.</param>
+        public void OpenObject(string inpName)
+        {
+            try
+            {
+                if (inpName == null)
+                {
+                    throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
+                }
+
+                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Object,
+                inpName, "", currentParent);
+                currentParent = currentNode.instance;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Create a node to close an object.
+        /// </summary>
+        public void CloseObject()
+        {
+            try
+            {
+                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.ObjectClose,
+                "", "", currentParent);
+                currentParent = nodeManager.nodeArray[currentNode.parentNode].parentNode;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Create a node to open an array. Array will have no name.
+        /// </summary>
+        public void OpenArray()
+        {
+            try
+            {
+                OpenArray("");
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Create a node to open an array.
+        /// </summary>
+        /// <param name="inpName">Name to give to the array object.</param>
+        public void OpenArray(string inpName)
+        {
+            try
+            {
+                if (inpName == null)
+                {
+                    throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
+                }
+
+                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Array,
+                inpName, "", currentParent);
+                currentParent = currentNode.instance;
+
+                //currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                //Parent = currentNode.instance;
+                //ParentNode = nodeManager.nodeArray[Parent];
+                //Mode = NodeManager.DataMode.Name;
+                //Type = NodeManager.DataType.Integer;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Create a node to close an array.
+        /// </summary>
+        public void CloseArray()
+        {
+            try
+            {
+                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.ArrayClose,
+                    "", "", currentParent);
+                currentParent = nodeManager.nodeArray[currentNode.parentNode].parentNode;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        #endregion
+
+        #region PropertyNodes
+        /// <summary>
+        /// Add a property node with a type of boolean.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Boolean holding the value of the node.</param>
         public void AddNode(string inpName, bool inpValue)
         {
             try
@@ -45,10 +172,35 @@ namespace CM.JsonTools
             }
         }
 
+        /// <summary>
+        /// Add a property node with a type of date (saves as a string).
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">DateTime holding the value of the node.</param>
         public void AddNode(string inpName, DateTime inpValue)
         {
             try
             {
+                // Set a default format for just the date.
+                string DateTimeFormat = "yyyy-MM-dd";
+                AddNode(inpName, inpValue, DateTimeFormat);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Add a property node with a type of date (saves as a string).
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">DateTime holding the value of the node.</param>
+        /// <param name="inpFormat">String specifying the format to apply to the date.</param>
+        public void AddNode(string inpName, DateTime inpValue, string inpFormat)
+        {
+            try
+            {
+                // Validate tyhe inputs.
                 if (string.IsNullOrWhiteSpace(inpName))
                 {
                     throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
@@ -58,8 +210,64 @@ namespace CM.JsonTools
                     throw new ArgumentException($"You cannot write a null value to the {inpName} node.", nameof(inpValue));
                 }
 
+                // Create the node.
                 NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.String,
-                inpName, inpValue.ToString("yyyy-MM-dd"), currentParent);
+                inpName, inpValue.ToString(inpFormat), currentParent);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Add a property node with a type of date (saves as a string).
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">DateTime holding the value of the node.</param>
+        /// <param name="inpShowTime">Pass true to add the time to the display format.</param>
+        public void AddNode(string inpName, DateTime inpValue, bool inpShowTime)
+        {
+            try
+            {
+                // Set a default format for just the date.
+                string DateTimeFormat = "yyyy-MM-dd";
+                if (inpShowTime)
+                {
+                    // Set a default format for just the date and time.
+                    DateTimeFormat += "THH:mm:ss.fff";
+                }
+                AddNode(inpName, inpValue, DateTimeFormat);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Add a property node with a type of date (saves as a string).
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">DateTime holding the value of the node.</param>
+        /// <param name="inpShowTime">Pass true to add the time to the display format.</param>
+        /// <param name="inpShowTimeZone">Pass true to add teh time-zone to the display format.</param>
+        public void AddNode(string inpName, DateTime inpValue, bool inpShowTime, bool inpShowTimeZone)
+        {
+            try
+            {
+                // Set a default format for just the date.
+                string DateTimeFormat = "yyyy-MM-dd";
+                if (inpShowTime)
+                {
+                    // Set a default format for just the date and time.
+                    DateTimeFormat += "THH:mm:ss.fff";
+                }
+                if (inpShowTimeZone)
+                {
+                    // Set a default format for just the date, time and time-zone.
+                    DateTimeFormat += "+zzz";
+                }
+
+                AddNode(inpName, inpValue, DateTimeFormat);
             }
             catch
             {
@@ -67,6 +275,11 @@ namespace CM.JsonTools
             }
         }
 
+        /// <summary>
+        /// Add a property node with a type of decimal.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Decimal holding the value of the node.</param>
         public void AddNode(string inpName, decimal inpValue)
         {
             try
@@ -84,6 +297,12 @@ namespace CM.JsonTools
             }
         }
 
+        /// <summary>
+        /// Add a property node with a type of decimal.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Decimal holding the value of the node.</param>
+        /// <param name="inpDecimalPlaces">Number of decimal places to store to.</param>
         public void AddNode(string inpName, decimal inpValue, int inpDecimalPlaces)
         {
             try
@@ -111,6 +330,11 @@ namespace CM.JsonTools
             }
         }
 
+        /// <summary>
+        /// Add a property node with a type of integer.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Integer holding the value of the node.</param>
         public void AddNode(string inpName, int inpValue)
         {
             try
@@ -129,6 +353,11 @@ namespace CM.JsonTools
             }
         }
 
+        /// <summary>
+        /// Add a property node with a type of string.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">String holding the value of the node.</param>
         public void AddNode(string inpName, string inpValue)
         {
             try
@@ -150,7 +379,9 @@ namespace CM.JsonTools
                 throw;
             }
         }
+        #endregion
 
+        #region DeleteNodes
         public void DeleteNode()
         {
             try
@@ -162,101 +393,13 @@ namespace CM.JsonTools
                 throw;
             }
         }
+        #endregion
 
-        public void OpenObject()
-        {
-            try
-            {
-                OpenObject("");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-        public void OpenObject(string inpName)
-        {
-            try
-            {
-                if (inpName == null)
-                {
-                    throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
-                }
-
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Object,
-                inpName, "", currentParent);
-                currentParent = currentNode.instance;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public void CloseObject()
-        {
-            try
-            {
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.ObjectClose,
-                "", "", currentParent);
-                currentParent = nodeManager.nodeArray[currentNode.parentNode].parentNode;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public void OpenArray()
-        {
-            try
-            {
-                OpenArray("");
-            }
-            catch
-            {
-                throw;
-            }
-        }
-        public void OpenArray(string inpName)
-        {
-            try
-            {
-                if (inpName == null)
-                {
-                    throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
-                }
-
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Array,
-                inpName, "", currentParent);
-                currentParent = currentNode.instance;
-
-                //currentNode = nodeManager.addNode(Type, Name, Value, Parent);
-                //Parent = currentNode.instance;
-                //ParentNode = nodeManager.nodeArray[Parent];
-                //Mode = NodeManager.DataMode.Name;
-                //Type = NodeManager.DataType.Integer;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public void CloseArray()
-        {
-            try
-            {
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.ArrayClose,
-                    "", "", currentParent);
-                currentParent = nodeManager.nodeArray[currentNode.parentNode].parentNode;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
+        #region OutputJsonData
+        /// <summary>
+        /// Read all the nodes and create a JSON from them.
+        /// </summary>
+        /// <returns>The Json string.</returns>
         public string WriteJson()
         {
             try
@@ -297,7 +440,7 @@ namespace CM.JsonTools
                         case NodeManager.DataType.Boolean:
                             newJson += AddComma(newJson);
                             newJson += "\"" + CurrentNode.fieldName + "\""
-                                    +  ":" + CurrentNode.fieldValue.ToLower();
+                                    + ":" + CurrentNode.fieldValue.ToLower();
                             break;
                         case NodeManager.DataType.Decimal:
                             newJson += AddComma(newJson);
@@ -341,6 +484,6 @@ namespace CM.JsonTools
             }
             return ReturnString;
         }
-
+        #endregion
     }
 }

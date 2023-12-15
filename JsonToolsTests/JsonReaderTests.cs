@@ -124,7 +124,7 @@ namespace CM.JsonTools.Tests
 
         #region MakeClassTests
         /// <summary>
-        /// A complex test with arrays and various data types. The output is written to a Class (see below).
+        /// A very simple test with arrays and various data types. The output is written to a Class (see below).
         /// </summary>
         [TestMethod()]
         public void SimpleMakeClassTest()

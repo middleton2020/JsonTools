@@ -296,6 +296,22 @@ namespace CM.JsonTools
                 throw;
             }
         }
+        /// <summary>
+        /// Add a property node with a type of decimal.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Double holding the value of the node.</param>
+        public void AddNode(string inpName, double inpValue)
+        {
+            try
+            {
+                AddNode(inpName, (decimal)inpValue);
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         /// <summary>
         /// Add a property node with a type of decimal.
@@ -382,11 +398,94 @@ namespace CM.JsonTools
         #endregion
 
         #region DeleteNodes
-        public void DeleteNode()
+        /// <summary>
+        /// Delete the specified node. Only deletes a single node.
+        /// </summary>
+        /// <param name="inpInstance">In of the instance to delete.</param>
+        public void DeleteNode(int inpInstance)
         {
             try
             {
+                nodeManager.deleteNode(inpInstance);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        public void DeleteNode(string inpName)
+        {
+            try
+            {
+                DeleteNode(inpName, false, false, false);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        public void DeleteNode(string inpName, bool inpFindByPath)
+        {
+            try
+            {
+                DeleteNode(inpName, inpFindByPath, false, false);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        public void DeleteNode(string inpName, bool inpFindByPath, bool inpRecursive)
+        {
+            try
+            {
+                DeleteNode(inpName, inpFindByPath, inpRecursive, false);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        public void DeleteNode(string inpName, bool inpFindByPath, bool inpRecursive, bool inpMultiple)
+        {
+            try
+            {
+                // Get records by path or by name.
+                int[] instanceList;
+                if (inpFindByPath)
+                {
+                    instanceList = nodeManager.findNodeByName(inpName);
+                }
+                else
+                {
+                    instanceList = nodeManager.findNodeByPath(inpName);
+                }
+                // No records have been found.
+                if (instanceList.Length == 0)
+                {
+                    throw new ArgumentOutOfRangeException($"No rercords found for {inpName}");
+                }
+                if (!inpMultiple)
+                {
+                    if (instanceList.Length > 1)
+                    {
+                        throw new ArgumentOutOfRangeException($"Multiple records exist for {inpName}. Use multiple handler.");
+                    }
+                }
+                // Not recursive delete and there are objects inside this one.
+                if (!inpRecursive)
+                {
+                    foreach (int instance in instanceList)
+                    {
+                        throw new ArgumentException($"{inpName} has child values. Use recursive handler.");
+                    }
+                }
 
+                // We've passed all validation, so delete the node(s).
+                foreach (int instance in instanceList)
+                {
+                    DeleteNode(instance);
+                }
             }
             catch
             {

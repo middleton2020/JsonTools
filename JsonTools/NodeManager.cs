@@ -103,6 +103,9 @@ namespace CM.JsonTools
             }
         }
 
+        public void deleteNode(int inpInstance) { }
+        public void deleteNodeRecursive(int inpInstance) { }
+
         /// <summary>
         /// Calculate the path for this node (paren.child.child.variable).
         /// </summary>
@@ -147,6 +150,74 @@ namespace CM.JsonTools
             {
                 throw;
             }
+        }
+        #endregion
+
+        #region EnquiryMethods
+        /// <summary>
+        /// Search the node list and return the index of any the match the specified name.
+        /// </summary>
+        /// <param name="inpName">String, name to search by.</param>
+        /// <returns>Int array of node instances selected.</returns>
+        public int[] findNodeByName(string inpName)
+        {
+            List<int> foundInstances = new List<int>();
+
+            // Step therough the nodes. Any that match the
+            // specified path are added to the results list.
+            foreach (KeyValuePair<int, NodeManager.node> entry in nodeArray)
+            {
+                if (entry.Value.fieldName == inpName)
+                {
+                    foundInstances.Add(entry.Key);
+                }
+            }
+
+            return foundInstances.ToArray();
+        }
+        /// <summary>
+        /// Search the node list and return the index of any the match the specified path.
+        /// </summary>
+        /// <param name="inpPath">String, path to search by.</param>
+        /// <returns>Int array of node instances selected.</returns>
+        public int[] findNodeByPath(string inpPath)
+        {
+            List<int> foundInstances = new List<int>();
+
+            // Step therough the nodes. Any that match the
+            // specified path are added to the results list.
+            foreach (KeyValuePair<int, NodeManager.node> entry in nodeArray)
+            {
+                if (entry.Value.nodePath == inpPath)
+                {
+                    foundInstances.Add(entry.Key);
+                }
+            }
+
+            return foundInstances.ToArray();
+        }
+        /// <summary>
+        /// Check if the node contains any sub nodes (typically Object and Array nodes do this).
+        /// </summary>
+        /// <param name="inpInstance">Int, instance to report on.</param>
+        /// <returns>Boolean, true if there are nodes 'within' this one.</returns>
+        public bool nodeHasChildren(int inpInstance)
+        {
+            int childNodes = 0;
+
+            // Step through the nodes. Ignore any closing nodes and
+            // count any the have the specified node as a parent.
+            foreach (KeyValuePair<int, NodeManager.node> entry in nodeArray)
+            {
+                if (entry.Value.parentNode == inpInstance &&
+                    entry.Value.dataType != DataType.ObjectClose &&
+                    entry.Value.dataType != DataType.ArrayClose)
+                {
+                    childNodes += 1;
+                }
+            }
+
+            return childNodes > 0;
         }
         #endregion
     }

@@ -399,92 +399,200 @@ namespace CM.JsonTools
 
         #region DeleteNodes
         /// <summary>
-        /// Delete the specified node. Only deletes a single node.
+        /// Delete the specified node(s).
         /// </summary>
-        /// <param name="inpInstance">In of the instance to delete.</param>
+        /// <param name="inpInstance">Int of the instance to delete.</param>
         public void DeleteNode(int inpInstance)
         {
             try
             {
-                nodeManager.deleteNode(inpInstance);
+                DeleteNode(inpInstance, "", false, false, false);
             }
             catch
             {
                 throw;
             }
         }
+        /// <summary>
+        /// Delete the specified node(s).
+        /// </summary>
+        /// <param name="inpInstance">Int of the instance to delete.</param>
+        /// <param name="inpRecursive">Pass true to delete this node and all the nodes that it parents.</param>
+        public void DeleteNode(int inpInstance, bool inpRecursive)
+        {
+            try
+            {
+                DeleteNode(inpInstance, "", false, inpRecursive, false);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Delete the specified node(s).
+        /// </summary>
+        /// <param name="inpName">Name or Path to identify the node(s) that we are deleting.</param>
         public void DeleteNode(string inpName)
         {
             try
             {
-                DeleteNode(inpName, false, false, false);
+                DeleteNode(0, inpName, false, false, false);
             }
             catch
             {
                 throw;
             }
         }
+        /// <summary>
+        /// Delete the specified node(s).
+        /// </summary>
+        /// <param name="inpName">Name or Path to identify the node(s) that we are deleting.</param>
+        /// <param name="inpFindByPath">Pass true if the inpName contains a full path, false if it is just a name.</param>
         public void DeleteNode(string inpName, bool inpFindByPath)
         {
             try
             {
-                DeleteNode(inpName, inpFindByPath, false, false);
+                DeleteNode(0, inpName, inpFindByPath, false, false);
             }
             catch
             {
                 throw;
             }
         }
+        /// <summary>
+        /// Delete the specified node(s).
+        /// </summary>
+        /// <param name="inpName">Name or Path to identify the node(s) that we are deleting.</param>
+        /// <param name="inpFindByPath">Pass true if the inpName contains a full path, false if it is just a name.</param>
+        /// <param name="inpRecursive">Pass true to delete this node and all the nodes that it parents.</param>
         public void DeleteNode(string inpName, bool inpFindByPath, bool inpRecursive)
         {
             try
             {
-                DeleteNode(inpName, inpFindByPath, inpRecursive, false);
+                DeleteNode(0, inpName, inpFindByPath, inpRecursive, false);
             }
             catch
             {
                 throw;
             }
         }
+        /// <summary>
+        /// Delete the specified node(s).
+        /// </summary>
+        /// <param name="inpName">Name or Path to identify the node(s) that we are deleting.</param>
+        /// <param name="inpFindByPath">Pass true if the inpName contains a full path, false if it is just a name.</param>
+        /// <param name="inpRecursive">Pass true to delete this node and all the nodes that it parents.</param>
+        /// <param name="inpMultiple">Pass true to delete all nodes matching the name/path.</param>
         public void DeleteNode(string inpName, bool inpFindByPath, bool inpRecursive, bool inpMultiple)
         {
             try
             {
-                // Get records by path or by name.
+                DeleteNode(0, inpName, inpFindByPath, inpRecursive, inpMultiple);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Delete the specified node(s).
+        /// </summary>
+        /// <param name="inpInstance">Int of the instance to delete.</param>
+        /// <param name="inpName">Name or Path to identify the node(s) that we are deleting.</param>
+        /// <param name="inpFindByPath">Pass true if the inpName contains a full path, false if it is just a name.</param>
+        /// <param name="inpRecursive">Pass true to delete this node and all the nodes that it parents.</param>
+        /// <param name="inpMultiple">Pass true to delete all nodes matching the name/path.</param>
+        public void DeleteNode(int inpInstance, string inpName, bool inpFindByPath, bool inpRecursive, bool inpMultiple)
+        {
+            try
+            {
+                // Get records by index or path or by name.
                 int[] instanceList;
-                if (inpFindByPath)
+
+                if (inpInstance > 0)
                 {
-                    instanceList = nodeManager.findNodeByName(inpName);
+                    nodeManager.validateInstance(inpInstance);
+                    instanceList = new int[1];
+                    instanceList[0] = inpInstance;
+                    inpName = inpInstance.ToString();
                 }
-                else
+                else if (inpFindByPath)
                 {
                     instanceList = nodeManager.findNodeByPath(inpName);
                 }
-                // No records have been found.
-                if (instanceList.Length == 0)
+                else
                 {
-                    throw new ArgumentOutOfRangeException($"No rercords found for {inpName}");
+                    instanceList = nodeManager.findNodeByName(inpName);
                 }
-                if (!inpMultiple)
-                {
-                    if (instanceList.Length > 1)
-                    {
-                        throw new ArgumentOutOfRangeException($"Multiple records exist for {inpName}. Use multiple handler.");
-                    }
-                }
+
+                ValidateNumberDeleted(inpName, instanceList, inpMultiple);
+
+                // Convert array to a list.
+                List<int> deleteList = new List<int>(instanceList);
+                // Add any child nodes to the list.
+                deleteList = nodeManager.listNodeChildren(deleteList);
+
                 // Not recursive delete and there are objects inside this one.
                 if (!inpRecursive)
                 {
-                    foreach (int instance in instanceList)
-                    {
-                        throw new ArgumentException($"{inpName} has child values. Use recursive handler.");
-                    }
+                    ValidateNotRecursive(inpName, deleteList, instanceList);
                 }
 
                 // We've passed all validation, so delete the node(s).
-                foreach (int instance in instanceList)
+                nodeManager.deleteNodeList(deleteList);
+                //DeleteNode(instanceList, inpRecursive);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        #endregion
+
+        #region Validation
+        /// <summary>
+        /// Validate that we've not got zero record, or unwanted multiple records.
+        /// </summary>
+        /// <param name="inpName">Name or index of the problem node.</param>
+        /// <param name="inpRequestArray">Int Array of records that we've asked to delete.</param>
+        /// <param name="inpMultiple">Pass true to delete all nodes matching the name/path.</param>
+        private void ValidateNumberDeleted(string inpName, int[] inpRequestArray, bool inpMultiple)
+        {
+            try
+            {
+                // No records have been found.
+                if (inpRequestArray.Length == 0)
                 {
-                    DeleteNode(instance);
+                    throw new ArgumentOutOfRangeException($"No rercords found for '{inpName}'");
+                }
+                if (!inpMultiple)
+                {
+                    // We're not processing multiple nodes, so throw an error.
+                    if (inpRequestArray.Length > 1)
+                    {
+                        throw new ArgumentOutOfRangeException($"Multiple records exist for '{inpName}'. Use multiple handler.");
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Check that none of the nodes we're deleting has a child node.
+        /// </summary>
+        /// <param name="inpName">Name or index of the problem node.</param>
+        /// <param name="inpDelList">List<int> of all nodes to be deleted.</int></param>
+        /// <param name="inpRequestArray">Int Array of records that we've asked to delete.</param>
+        private void ValidateNotRecursive(string inpName, List<int> inpDelList, int[] inpRequestArray)
+        {
+            try
+            {
+                if (inpDelList.Count > inpRequestArray.Length)
+                {
+                    throw new ArgumentException($"'{inpName}' has child values. Use recursive handler.");
                 }
             }
             catch

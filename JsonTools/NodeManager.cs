@@ -15,6 +15,7 @@ namespace CM.JsonTools
         public enum DataType
         {
             None,
+            Deleted,
             Array,
             ArrayClose,
             Object,
@@ -103,8 +104,93 @@ namespace CM.JsonTools
             }
         }
 
-        public void deleteNode(int inpInstance) { }
-        public void deleteNodeRecursive(int inpInstance) { }
+        /// <summary>
+        /// Delete all nodes in the submitted list.
+        /// </summary>
+        /// <param name="deleteList">List<int> of instances to  be deleted.</int></param>
+        public void deleteNodeList(List<int> deleteList)
+        {
+            try
+            {
+                foreach (int entry in deleteList)
+                {
+                    nodeArray[entry].dataType = DataType.Deleted;
+                }
+                RenumberNodes();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Once we've marked nodes as deleted, re-generate the list without those nodes.
+        /// </summary>
+        public void RenumberNodes()
+        {
+            try
+            {
+                // Initial variables.
+                Dictionary<int, node> tempNodeArray = new Dictionary<int, node>();
+                int newCounter = 1;
+                int currentParent = 0;
+
+                // Copy the nodes that we're not deleting to a new array and re-number them.
+                foreach (KeyValuePair<int, node> entry in nodeArray)
+                {
+                    if (entry.Value.dataType == DataType.Deleted)
+                    {
+                        // This is deleted, so don't copy it.
+                    }
+                    else
+                    {
+                        tempNodeArray.Add(newCounter, entry.Value);
+                        // Set the new parent number.
+                        tempNodeArray[newCounter].parentNode = currentParent;
+                        if (tempNodeArray[newCounter].dataType == DataType.Array ||
+                           tempNodeArray[newCounter].dataType == DataType.Object ||
+                           tempNodeArray[newCounter].dataType == DataType.Top)
+                        {
+                            currentParent += 1;
+                        }
+                        else if (tempNodeArray[newCounter].dataType == DataType.ArrayClose ||
+                                 tempNodeArray[newCounter].dataType == DataType.ObjectClose)
+                        {
+                            currentParent = tempNodeArray[currentParent].parentNode;
+                        }
+                        newCounter += 1;
+                    }
+                }
+
+                // Copy the new array over the original one.
+                nodeArray.Clear();
+                nodeArray = tempNodeArray;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Does the specified instance belong to an existing node?
+        /// </summary>
+        /// <param name="inpInstance">Int, instance to check.</param>
+        public void validateInstance(int inpInstance)
+        {
+            try
+            {
+                if (inpInstance > nodeArray.Count - 1)
+                {
+                    throw new IndexOutOfRangeException($"There is no node {inpInstance}");
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         /// <summary>
         /// Calculate the path for this node (paren.child.child.variable).
@@ -196,28 +282,26 @@ namespace CM.JsonTools
 
             return foundInstances.ToArray();
         }
-        /// <summary>
-        /// Check if the node contains any sub nodes (typically Object and Array nodes do this).
-        /// </summary>
-        /// <param name="inpInstance">Int, instance to report on.</param>
-        /// <returns>Boolean, true if there are nodes 'within' this one.</returns>
-        public bool nodeHasChildren(int inpInstance)
-        {
-            int childNodes = 0;
 
+        /// <summary>
+        /// Return a list of child nodes.
+        /// </summary>
+        /// <param name="inpInstance">List<int> of instances to check.</int></param>
+        /// <returns>List<int> of child nodes.</int></returns>
+        public List<int> listNodeChildren(List<int> inpInstance)
+        {
             // Step through the nodes. Ignore any closing nodes and
-            // count any the have the specified node as a parent.
+            // count any the have the specified node as a parent or grandparent.
             foreach (KeyValuePair<int, NodeManager.node> entry in nodeArray)
             {
-                if (entry.Value.parentNode == inpInstance &&
-                    entry.Value.dataType != DataType.ObjectClose &&
-                    entry.Value.dataType != DataType.ArrayClose)
+                if (inpInstance.Contains(entry.Value.parentNode) &&
+                    !inpInstance.Contains(entry.Value.instance))
                 {
-                    childNodes += 1;
+                    inpInstance.Add(entry.Value.instance);
                 }
             }
 
-            return childNodes > 0;
+            return inpInstance;
         }
         #endregion
     }

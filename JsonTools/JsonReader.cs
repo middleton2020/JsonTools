@@ -10,8 +10,8 @@ namespace CM.JsonTools
         #endregion
 
         #region PassedDeligates
-        public delegate object DeligateMakeClass(string inpName, object inpObject, string inpPath);
-        public delegate object DeligateCloseClass(string inpName, object inpObject, string inpPath);
+        public delegate object DeligateMakeObject(string inpName, object inpObject, string inpPath);
+        public delegate object DeligateCloseObject(string inpName, object inpObject, string inpPath);
         public delegate object DeligateMakeArray(string inpName, object inpObject, string inpPath);
         public delegate object DeligateCloseArray(string inpName, object inpObject, string inpPath);
         public delegate object DeligateSetBoolean(string inpName, bool inpValue, object inpObject, string inpPath);
@@ -19,30 +19,30 @@ namespace CM.JsonTools
         public delegate object DeligateSetInteger(string inpName, int inpValue, object inpObject, string inpPath);
         public delegate object DeligateSetString(string inpName, string inpValue, object inpObject, string inpPath);
 
-        DeligateMakeClass makeClass;
-        DeligateCloseClass closeClass;
-        DeligateMakeArray makeArray;
-        DeligateCloseArray closeArray;
-        DeligateSetBoolean setBoolean;
-        DeligateSetDecimal setDecimal;
-        DeligateSetInteger setInteger;
-        DeligateSetString setString;
+        readonly DeligateMakeObject makeObject;
+        readonly DeligateCloseObject closeObject;
+        readonly DeligateMakeArray makeArray;
+        readonly DeligateCloseArray closeArray;
+        readonly DeligateSetBoolean setBoolean;
+        readonly DeligateSetDecimal setDecimal;
+        readonly DeligateSetInteger setInteger;
+        readonly DeligateSetString setString;
         #endregion
 
         #region Constructors
         /// <summary>
         /// Set up the deligates passed from the calling program. We'll use these to build a class from our JSON nodes.
         /// </summary>
-        /// <param name="inpMakeClass">Method to create a new class</param>
-        /// <param name="inpCloseClass">Method to close that class</param>
+        /// <param name="inpMakeObject">Method to create a new class</param>
+        /// <param name="inpCloseObject">Method to close that class</param>
         /// <param name="inpMakeArray">Method to create a new array</param>
         /// <param name="inpCloseArray">Method to close that array</param>
         /// <param name="inpSetBoolean">Method to set boolean fields</param>
         /// <param name="inpSetDecimal">Method to set decimal fields</param>
         /// <param name="inpSetInteger">Method to set integer fields</param>
         /// <param name="inpSetString">Method to set string fields</param>
-        public JsonReader(DeligateMakeClass inpMakeClass,
-                          DeligateCloseClass inpCloseClass,
+        public JsonReader(DeligateMakeObject inpMakeObject,
+                          DeligateCloseObject inpCloseObject,
                           DeligateMakeArray inpMakeArray,
                           DeligateCloseArray inpCloseArray,
                           DeligateSetBoolean inpSetBoolean,
@@ -52,8 +52,8 @@ namespace CM.JsonTools
         {
             try
             {
-                makeClass = inpMakeClass;
-                closeClass = inpCloseClass;
+                makeObject = inpMakeObject;
+                closeObject = inpCloseObject;
                 makeArray = inpMakeArray;
                 closeArray = inpCloseArray;
                 setBoolean = inpSetBoolean;
@@ -114,9 +114,9 @@ namespace CM.JsonTools
                 string Value = "";
                 // Control variables
                 int Parent = 1;
-                NodeManager.node ParentNode = nodeManager.addNode(NodeManager.DataType.Top, "", "", 0);
+                NodeManager.Node ParentNode = nodeManager.AddNode(NodeManager.DataType.Top, "", "", 0);
                 Boolean InString = false;
-                NodeManager.node currentNode = null;
+                NodeManager.Node currentNode = null;
 
                 // Break the JSON up into an array of characters.
                 char[] byCharacters = inpJsonObject.ToCharArray();
@@ -124,7 +124,7 @@ namespace CM.JsonTools
                 // Then step through it, character by character.
                 foreach (char letter in byCharacters)
                 {
-                    // Rebuild any quoited strings to make use them properly.
+                    // Rebuild any quoted strings to make use them properly.
                     if (InString == true)
                     {
                         // Close the string.
@@ -177,7 +177,7 @@ namespace CM.JsonTools
                                 // We've finished reading the text. If there are no speach marks, but the value is
                                 Type = BooleanCheck(Type, Value);
 
-                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
                                 Mode = NodeManager.DataMode.Name;
                                 Name = "";
                                 Value = "";
@@ -187,7 +187,7 @@ namespace CM.JsonTools
                             case '{':
                                 Type = NodeManager.DataType.Object;
                                 Value = "";
-                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
                                 Parent = currentNode.instance;
                                 ParentNode = nodeManager.nodeArray[Parent];
                                 Mode = NodeManager.DataMode.Name;
@@ -200,7 +200,7 @@ namespace CM.JsonTools
                                 // We've finished reading the text. If there are no speach marks, but the value is
                                 Type = BooleanCheck(Type, Value);
 
-                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
                                 Type = NodeManager.DataType.ObjectClose;
                                 Name = "";
                                 Value = "";
@@ -210,7 +210,7 @@ namespace CM.JsonTools
                             case '[':
                                 Type = NodeManager.DataType.Array;
                                 Value = "";
-                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
                                 Parent = currentNode.instance;
                                 ParentNode = nodeManager.nodeArray[Parent];
                                 Mode = NodeManager.DataMode.Name;
@@ -223,7 +223,7 @@ namespace CM.JsonTools
                                 // We've finished reading the text. If there are no speach marks, but the value is
                                 Type = BooleanCheck(Type, Value);
 
-                                currentNode = nodeManager.addNode(Type, Name, Value, Parent);
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
                                 Type = NodeManager.DataType.ArrayClose;
                                 Name = "";
                                 Value = "";
@@ -264,7 +264,7 @@ namespace CM.JsonTools
                     {
                         ParentNode = nodeManager.nodeArray[Parent];
                         Name = ParentNode.fieldName;
-                        nodeManager.addNode(Type, Name, Value, Parent);
+                        nodeManager.AddNode(Type, Name, Value, Parent);
                         Parent = ParentNode.parentNode;
                         Mode = NodeManager.DataMode.Name;
                         Type = NodeManager.DataType.None;
@@ -286,9 +286,9 @@ namespace CM.JsonTools
         {
             try
             {
-                foreach (KeyValuePair<int, NodeManager.node> entry in nodeManager.nodeArray)
+                foreach (KeyValuePair<int, NodeManager.Node> entry in nodeManager.nodeArray)
                 {
-                    NodeManager.node CurrentNode = entry.Value;
+                    NodeManager.Node CurrentNode = entry.Value;
                     switch (CurrentNode.dataType)
                     {
                         case NodeManager.DataType.None:
@@ -304,10 +304,10 @@ namespace CM.JsonTools
                             inpTempObject = closeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case NodeManager.DataType.Object:
-                            inpTempObject = makeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
+                            inpTempObject = makeObject(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case NodeManager.DataType.ObjectClose:
-                            inpTempObject = closeClass(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
+                            inpTempObject = closeObject(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
                             break;
                         case NodeManager.DataType.Boolean:
                             bool fieldBoolValue = Convert.ToBoolean(entry.Value.fieldValue);

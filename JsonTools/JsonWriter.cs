@@ -7,7 +7,7 @@ namespace CM.JsonTools
     public class JsonWriter
     {
         #region LocalVariables
-        private NodeManager nodeManager;
+        private readonly NodeManager nodeManager;
         private int currentParent = 0;
         #endregion
 
@@ -21,7 +21,7 @@ namespace CM.JsonTools
             {
                 // Prepare the node tools/storage.
                 nodeManager = new NodeManager();
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Top,
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Top,
                         "", "", 0);
                 currentParent = currentNode.instance;
             }
@@ -40,6 +40,7 @@ namespace CM.JsonTools
         {
             try
             {
+                // Create a JSON object with a blank name.
                 OpenObject("");
             }
             catch
@@ -55,13 +56,15 @@ namespace CM.JsonTools
         {
             try
             {
+                // Name cannot be null.
                 if (inpName == null)
                 {
                     throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
                 }
 
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Object,
-                inpName, "", currentParent);
+                // Create the node and add it to the nodeManager array.
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Object,
+                            inpName, "", currentParent);
                 currentParent = currentNode.instance;
             }
             catch
@@ -77,8 +80,8 @@ namespace CM.JsonTools
         {
             try
             {
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.ObjectClose,
-                "", "", currentParent);
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.ObjectClose,
+                            "", "", currentParent);
                 currentParent = nodeManager.nodeArray[currentNode.parentNode].parentNode;
             }
             catch
@@ -94,6 +97,7 @@ namespace CM.JsonTools
         {
             try
             {
+                // Open an array with a blank name.
                 OpenArray("");
             }
             catch
@@ -109,20 +113,15 @@ namespace CM.JsonTools
         {
             try
             {
+                // Object names can't be null.
                 if (inpName == null)
                 {
                     throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
                 }
 
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Array,
-                inpName, "", currentParent);
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Array,
+                            inpName, "", currentParent);
                 currentParent = currentNode.instance;
-
-                //currentNode = nodeManager.addNode(Type, Name, Value, Parent);
-                //Parent = currentNode.instance;
-                //ParentNode = nodeManager.nodeArray[Parent];
-                //Mode = NodeManager.DataMode.Name;
-                //Type = NodeManager.DataType.Integer;
             }
             catch
             {
@@ -137,7 +136,7 @@ namespace CM.JsonTools
         {
             try
             {
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.ArrayClose,
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.ArrayClose,
                     "", "", currentParent);
                 currentParent = nodeManager.nodeArray[currentNode.parentNode].parentNode;
             }
@@ -163,8 +162,8 @@ namespace CM.JsonTools
                     throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
                 }
 
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Boolean,
-                inpName, inpValue.ToString(), currentParent);
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Boolean,
+                            inpName, inpValue.ToString(), currentParent);
             }
             catch
             {
@@ -182,8 +181,8 @@ namespace CM.JsonTools
             try
             {
                 // Set a default format for just the date.
-                string DateTimeFormat = "yyyy-MM-dd";
-                AddNode(inpName, inpValue, DateTimeFormat);
+                string dateTimeFormat = "yyyy-MM-dd";
+                AddNode(inpName, inpValue, dateTimeFormat);
             }
             catch
             {
@@ -211,8 +210,8 @@ namespace CM.JsonTools
                 }
 
                 // Create the node.
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.String,
-                inpName, inpValue.ToString(inpFormat), currentParent);
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.String,
+                            inpName, inpValue.ToString(inpFormat), currentParent);
             }
             catch
             {
@@ -230,13 +229,13 @@ namespace CM.JsonTools
             try
             {
                 // Set a default format for just the date.
-                string DateTimeFormat = "yyyy-MM-dd";
+                string dateTimeFormat = "yyyy-MM-dd";
                 if (inpShowTime)
                 {
                     // Set a default format for just the date and time.
-                    DateTimeFormat += "THH:mm:ss.fff";
+                    dateTimeFormat += "THH:mm:ss.fff";
                 }
-                AddNode(inpName, inpValue, DateTimeFormat);
+                AddNode(inpName, inpValue, dateTimeFormat);
             }
             catch
             {
@@ -255,19 +254,19 @@ namespace CM.JsonTools
             try
             {
                 // Set a default format for just the date.
-                string DateTimeFormat = "yyyy-MM-dd";
+                string dateTimeFormat = "yyyy-MM-dd";
                 if (inpShowTime)
                 {
                     // Set a default format for just the date and time.
-                    DateTimeFormat += "THH:mm:ss.fff";
+                    dateTimeFormat += "THH:mm:ss.fff";
                 }
                 if (inpShowTimeZone)
                 {
                     // Set a default format for just the date, time and time-zone.
-                    DateTimeFormat += "+zzz";
+                    dateTimeFormat += "zzz";
                 }
 
-                AddNode(inpName, inpValue, DateTimeFormat);
+                AddNode(inpName, inpValue, dateTimeFormat);
             }
             catch
             {
@@ -312,7 +311,6 @@ namespace CM.JsonTools
                 throw;
             }
         }
-
         /// <summary>
         /// Add a property node with a type of decimal.
         /// </summary>
@@ -328,17 +326,17 @@ namespace CM.JsonTools
                     throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
                 }
 
-                string format;
+                string numberFormat;
                 if (inpDecimalPlaces >= 0)
                 {
-                    format = "N" + inpDecimalPlaces.ToString();
+                    numberFormat = "N" + inpDecimalPlaces.ToString();
                 }
                 else
                 {
                     throw new ArgumentException($"'{nameof(inpDecimalPlaces)}' cannot be negative.", nameof(inpDecimalPlaces));
                 }
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Decimal,
-                        inpName, inpValue.ToString(format), currentParent);
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Decimal,
+                        inpName, inpValue.ToString(numberFormat), currentParent);
             }
             catch
             {
@@ -360,7 +358,7 @@ namespace CM.JsonTools
                     throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
                 }
 
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.Integer,
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Integer,
                 inpName, inpValue.ToString(), currentParent);
             }
             catch
@@ -387,7 +385,7 @@ namespace CM.JsonTools
                     throw new ArgumentException($"You cannot write a null value to the {inpName} node.", nameof(inpValue));
                 }
 
-                NodeManager.node currentNode = nodeManager.addNode(NodeManager.DataType.String,
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.String,
                 inpName, inpValue, currentParent);
             }
             catch
@@ -512,18 +510,18 @@ namespace CM.JsonTools
 
                 if (inpInstance > 0)
                 {
-                    nodeManager.validateInstance(inpInstance);
+                    nodeManager.ValidateInstance(inpInstance);
                     instanceList = new int[1];
                     instanceList[0] = inpInstance;
                     inpName = inpInstance.ToString();
                 }
                 else if (inpFindByPath)
                 {
-                    instanceList = nodeManager.findNodeByPath(inpName);
+                    instanceList = nodeManager.FindNodeByPath(inpName);
                 }
                 else
                 {
-                    instanceList = nodeManager.findNodeByName(inpName);
+                    instanceList = nodeManager.FindNodeByName(inpName);
                 }
 
                 ValidateNumberDeleted(inpName, instanceList, inpMultiple);
@@ -531,7 +529,7 @@ namespace CM.JsonTools
                 // Convert array to a list.
                 List<int> deleteList = new List<int>(instanceList);
                 // Add any child nodes to the list.
-                deleteList = nodeManager.listNodeChildren(deleteList);
+                deleteList = nodeManager.ListNodeChildren(deleteList);
 
                 // Not recursive delete and there are objects inside this one.
                 if (!inpRecursive)
@@ -540,7 +538,7 @@ namespace CM.JsonTools
                 }
 
                 // We've passed all validation, so delete the node(s).
-                nodeManager.deleteNodeList(deleteList);
+                nodeManager.DeleteNodeList(deleteList);
                 //DeleteNode(instanceList, inpRecursive);
             }
             catch
@@ -613,9 +611,9 @@ namespace CM.JsonTools
             {
                 string newJson = "";
 
-                foreach (KeyValuePair<int, NodeManager.node> entry in nodeManager.nodeArray)
+                foreach (KeyValuePair<int, NodeManager.Node> entry in nodeManager.nodeArray)
                 {
-                    NodeManager.node CurrentNode = entry.Value;
+                    NodeManager.Node CurrentNode = entry.Value;
                     switch (CurrentNode.dataType)
                     {
                         case NodeManager.DataType.None:
@@ -682,14 +680,14 @@ namespace CM.JsonTools
         /// <returns>inpTempString, with the comma added.</returns>
         private string AddComma(string inpCurrentString)
         {
-            string ReturnString = "";
+            string returnString = "";
             if (!inpCurrentString.EndsWith("{") &&
                 !inpCurrentString.EndsWith("[") &&
                 inpCurrentString != "")
             {
-                ReturnString = ",";
+                returnString = ",";
             }
-            return ReturnString;
+            return returnString;
         }
         #endregion
     }

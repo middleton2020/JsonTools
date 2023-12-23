@@ -11,6 +11,10 @@ namespace CM.JsonTools.Tests
     [TestClass()]
     public class JsonWriterTests
     {
+        #region AddTests
+        /// <summary>
+        /// A very simple test, just strings.
+        /// </summary>
         [TestMethod()]
         public void SimpleMakeJsonTest()
         {
@@ -30,6 +34,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// Simple test with Integers added.
+        /// </summary>
         [TestMethod()]
         public void IntegerMakeJsonTest()
         {
@@ -52,6 +59,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// Simple test with Integetrs and Decimals added.
+        /// </summary>
         [TestMethod()]
         public void DecimalMakeJsonTest()
         {
@@ -77,6 +87,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// Simple test with Integers, Decimals and Booleans added.
+        /// </summary>
         [TestMethod()]
         public void BooleanMakeJsonTest()
         {
@@ -105,8 +118,11 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// Simple test with Integers, Decimals, Booleans and Dates added.
+        /// </summary>
         [TestMethod()]
-        public void DateTimeMakeJsonTest()
+        public void DateMakeJsonTest()
         {
             DateTime testDate = Convert.ToDateTime("2023-09-30");
             string testJson = "{"
@@ -137,6 +153,115 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// Simple test with Integers, Decimals, Booleans and DatesTime added.
+        /// </summary>
+        [TestMethod()]
+        public void DateTimeMakeJsonTest()
+        {
+            DateTime testDate = Convert.ToDateTime("2023-09-30  07:00:15");
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":\"Test Name\""
+                            + ","
+                            + "\"parcels\":1"
+                            + ","
+                            + "\"value\":11.50"
+                            + ","
+                            + "\"orderDate\":\"2023-09-30T07:00:15.000\""
+                            + ","
+                            + "\"saturdayDelivery\":true"
+                            + "}";
+
+            JsonWriter testWriter = new JsonWriter();
+            testWriter.OpenObject("");
+            testWriter.AddNode("id", "Bibble");
+            testWriter.AddNode("name", "Test Name");
+            testWriter.AddNode("parcels", 1);
+            testWriter.AddNode("value", (decimal)11.50);
+            testWriter.AddNode("orderDate", testDate, true);
+            testWriter.AddNode("saturdayDelivery", true);
+            testWriter.CloseObject();
+            string resultJson = testWriter.WriteJson();
+
+            Assert.AreEqual(testJson, resultJson, false);
+        }
+
+        /// <summary>
+        /// Simple test with Integers, Decimals, Booleans and Dates added.
+        /// </summary>
+        [TestMethod()]
+        public void DateTimeZoneMakeJsonTest()
+        {
+            DateTime testDate = Convert.ToDateTime("2023-09-30  7:00:15 AM+1:00");
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":\"Test Name\""
+                            + ","
+                            + "\"parcels\":1"
+                            + ","
+                            + "\"value\":11.50"
+                            + ","
+                            + "\"orderDate\":\"2023-09-30T07:00:15.000+01:00\""
+                            + ","
+                            + "\"saturdayDelivery\":true"
+                            + "}";
+
+            JsonWriter testWriter = new JsonWriter();
+            testWriter.OpenObject("");
+            testWriter.AddNode("id", "Bibble");
+            testWriter.AddNode("name", "Test Name");
+            testWriter.AddNode("parcels", 1);
+            testWriter.AddNode("value", (decimal)11.50);
+            testWriter.AddNode("orderDate", testDate, true, true);
+            testWriter.AddNode("saturdayDelivery", true);
+            testWriter.CloseObject();
+            string resultJson = testWriter.WriteJson();
+
+            Assert.AreEqual(testJson, resultJson, false);
+        }
+
+        /// <summary>
+        /// Simple test with Integers, Decimals, Booleans and Dates added.
+        /// </summary>
+        [TestMethod()]
+        public void DateFormatMakeJsonTest()
+        {
+            DateTime testDate = Convert.ToDateTime("2023-09-30 07:00:15");
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":\"Test Name\""
+                            + ","
+                            + "\"parcels\":1"
+                            + ","
+                            + "\"value\":11.50"
+                            + ","
+                            + "\"orderDate\":\"2023-09-30T07:00:15.000\""
+                            + ","
+                            + "\"saturdayDelivery\":true"
+                            + "}";
+
+            JsonWriter testWriter = new JsonWriter();
+            testWriter.OpenObject("");
+            testWriter.AddNode("id", "Bibble");
+            testWriter.AddNode("name", "Test Name");
+            testWriter.AddNode("parcels", 1);
+            testWriter.AddNode("value", (decimal)11.50);
+            testWriter.AddNode("orderDate", testDate, "yyyy-MM-ddTHH:mm:ss.fff");
+            testWriter.AddNode("saturdayDelivery", true);
+            testWriter.CloseObject();
+            string resultJson = testWriter.WriteJson();
+
+            Assert.AreEqual(testJson, resultJson, false);
+        }
+
+
+        /// <summary>
+        /// More complex test with all data types and arrays.
+        /// </summary>
         [TestMethod()]
         public void ArrayMakeJsonTest()
         {
@@ -194,7 +319,12 @@ namespace CM.JsonTools.Tests
 
             Assert.AreEqual(testJson, resultJson, false);
         }
+        #endregion
 
+        #region DeleteNodeTests
+        /// <summary>
+        /// Delete a simple node.
+        /// </summary>
         [TestMethod()]
         public void DeleteSingleNodeTest()
         {
@@ -256,6 +386,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// Delete a node with sub-nodes.
+        /// </summary>
         [TestMethod()]
         public void DeleteRecursiveNodeTest()
         {
@@ -317,6 +450,9 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        /// <summary>
+        /// Delete multiple nodes with the same name.
+        /// </summary>
         [TestMethod()]
         public void DeleteMultipleNodeTest()
         {
@@ -379,6 +515,74 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
+        //Delete by path
+        /// <summary>
+        /// Delete a node, found by it's path.
+        /// </summary>
+        [TestMethod()]
+        public void DeletePathNodeTest()
+        {
+            DateTime testDate = Convert.ToDateTime("2023-09-30");
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":\"Test Name\""
+                            + ","
+                            + "\"parcels\":1"
+                            + ","
+                            + "\"value\":11.50"
+                            + ","
+                            + "\"orderDate\":\"2023-09-30\""
+                            + ","
+                            + "\"items\":"
+                            + "["
+                            + "{"
+                            // + "\"name\":\"Box 17\""
+                            + "}"
+                            + ","
+                            + "{"
+                            // + "\"name\":\"22 Sphere\""
+                            + "}"
+                            + ","
+                            + "{"
+                            // + "\"name\":\"Alphabet\""
+                            + "}"
+                            + "]"
+                            + ","
+                            + "\"saturdayDelivery\":true"
+                            + "}";
+
+            JsonWriter testWriter = new JsonWriter();
+            testWriter.OpenObject("");
+            testWriter.AddNode("id", "Bibble");
+            testWriter.AddNode("name", "Test Name");
+            testWriter.AddNode("parcels", 1);
+            testWriter.AddNode("value", (decimal)11.50);
+            testWriter.AddNode("orderDate", testDate);
+            testWriter.OpenArray("items");
+            testWriter.OpenObject();
+            testWriter.AddNode("name", "Box 17");
+            testWriter.CloseObject();
+            testWriter.OpenObject();
+            testWriter.AddNode("name", "22 Sphere");
+            testWriter.CloseObject();
+            testWriter.OpenObject();
+            testWriter.AddNode("name", "Alphabet");
+            testWriter.CloseObject();
+            testWriter.CloseArray();
+            testWriter.AddNode("saturdayDelivery", true);
+            testWriter.CloseObject();
+
+            testWriter.DeleteNode("items.name",true,false,true);
+
+            string resultJson = testWriter.WriteJson();
+
+            Assert.AreEqual(testJson, resultJson, false);
+        }
+
+        /// <summary>
+        /// Try to delete a node with sub-nodes, but recursive switched off.
+        /// </summary>
         [TestMethod()]
         public void FailDeleteRecursiveNodeTest()
         {
@@ -426,6 +630,9 @@ namespace CM.JsonTools.Tests
             }
         }
 
+        /// <summary>
+        /// Try to delete multiple nodes with the same name, but multiple switched off.
+        /// </summary>
         [TestMethod()]
         public void FailDeleteMultipleNodeTest()
         {
@@ -474,6 +681,9 @@ namespace CM.JsonTools.Tests
             }
         }
 
+        /// <summary>
+        /// Try to delete a node by name, that doesn't exist.
+        /// </summary>
         [TestMethod()]
         public void FailDeleteNamedNodeTest()
         {
@@ -522,6 +732,9 @@ namespace CM.JsonTools.Tests
             }
         }
 
+        /// <summary>
+        /// Try to delete a node by path, that doesn't exist.
+        /// </summary>
         [TestMethod()]
         public void FailDeletePathNodeTest()
         {
@@ -569,6 +782,9 @@ namespace CM.JsonTools.Tests
             }
         }
 
+        /// <summary>
+        /// Try to delete a node with too high a sequence.
+        /// </summary>
         [TestMethod()]
         public void FailDeleteTooHighNodeTest()
         {
@@ -615,5 +831,6 @@ namespace CM.JsonTools.Tests
                 Assert.Fail();
             }
         }
+        #endregion
     }
 }

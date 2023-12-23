@@ -31,7 +31,7 @@ namespace CM.JsonTools
         /// <summary>
         /// A node of the JSON holds a single data item, be it a 'class', an array or a field.
         /// </summary>
-        public class node
+        public class Node
         {
             public int instance;
             public string fieldName;
@@ -48,11 +48,11 @@ namespace CM.JsonTools
             /// <param name="inpValue">String, the value of the node element.</param>
             /// <param name="inpType">DataType enum, what is the data type?</param>
             /// <param name="inpParent">Int, instance number for the node that 'contains' this node.</param>
-            public node(int inpInstance,
-                string inpName,
-                string inpValue,
-                DataType inpType,
-                int inpParent)
+            public Node(int inpInstance,
+                        string inpName,
+                        string inpValue,
+                        DataType inpType,
+                        int inpParent)
             {
                 instance = inpInstance;
                 fieldName = inpName.Trim();
@@ -65,7 +65,7 @@ namespace CM.JsonTools
 
         #region LocalVariables
         // List of nodes that we've created.
-        public Dictionary<int, node> nodeArray = new Dictionary<int, node>();
+        public Dictionary<int, Node> nodeArray = new Dictionary<int, Node>();
         // Counter of what the next index number for the node.
         int nodeInstanceCounter = 1;
         #endregion
@@ -79,7 +79,7 @@ namespace CM.JsonTools
         /// <param name="inpValue">String, Value of node</param>
         /// <param name="inpParent">Int, instance number for the node that 'contains' this node</param>
         /// <returns>The new node object</returns>
-        public node addNode(DataType inpType, string inpName, string inpValue, int inpParent)
+        public Node AddNode(DataType inpType, string inpName, string inpValue, int inpParent)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace CM.JsonTools
                 else
                 {
                     // Create a new node, add it to the nodeArray and return the new node.
-                    node NodeEntry = new node(nodeInstanceCounter, inpName, inpValue, inpType, inpParent);
+                    Node NodeEntry = new Node(nodeInstanceCounter, inpName, inpValue, inpType, inpParent);
                     nodeInstanceCounter += 1;
                     nodeArray.Add(NodeEntry.instance, NodeEntry);
                     NodeEntry.nodePath = BuildPath(NodeEntry.instance);
@@ -108,14 +108,16 @@ namespace CM.JsonTools
         /// Delete all nodes in the submitted list.
         /// </summary>
         /// <param name="deleteList">List<int> of instances to  be deleted.</int></param>
-        public void deleteNodeList(List<int> deleteList)
+        public void DeleteNodeList(List<int> deleteList)
         {
             try
             {
+                // Mark fields that we want to delete as deleted.
                 foreach (int entry in deleteList)
                 {
                     nodeArray[entry].dataType = DataType.Deleted;
                 }
+                // Rebuild the array, excluding the nodes marked as deleted.
                 RenumberNodes();
             }
             catch
@@ -132,12 +134,12 @@ namespace CM.JsonTools
             try
             {
                 // Initial variables.
-                Dictionary<int, node> tempNodeArray = new Dictionary<int, node>();
+                Dictionary<int, Node> tempNodeArray = new Dictionary<int, Node>();
                 int newCounter = 1;
                 int currentParent = 0;
 
                 // Copy the nodes that we're not deleting to a new array and re-number them.
-                foreach (KeyValuePair<int, node> entry in nodeArray)
+                foreach (KeyValuePair<int, Node> entry in nodeArray)
                 {
                     if (entry.Value.dataType == DataType.Deleted)
                     {
@@ -177,10 +179,11 @@ namespace CM.JsonTools
         /// Does the specified instance belong to an existing node?
         /// </summary>
         /// <param name="inpInstance">Int, instance to check.</param>
-        public void validateInstance(int inpInstance)
+        public void ValidateInstance(int inpInstance)
         {
             try
             {
+                // Make sure that the instance is within the node array's length.
                 if (inpInstance > nodeArray.Count - 1)
                 {
                     throw new IndexOutOfRangeException($"There is no node {inpInstance}");
@@ -245,13 +248,13 @@ namespace CM.JsonTools
         /// </summary>
         /// <param name="inpName">String, name to search by.</param>
         /// <returns>Int array of node instances selected.</returns>
-        public int[] findNodeByName(string inpName)
+        public int[] FindNodeByName(string inpName)
         {
             List<int> foundInstances = new List<int>();
 
             // Step therough the nodes. Any that match the
             // specified path are added to the results list.
-            foreach (KeyValuePair<int, NodeManager.node> entry in nodeArray)
+            foreach (KeyValuePair<int, NodeManager.Node> entry in nodeArray)
             {
                 if (entry.Value.fieldName == inpName)
                 {
@@ -266,13 +269,13 @@ namespace CM.JsonTools
         /// </summary>
         /// <param name="inpPath">String, path to search by.</param>
         /// <returns>Int array of node instances selected.</returns>
-        public int[] findNodeByPath(string inpPath)
+        public int[] FindNodeByPath(string inpPath)
         {
             List<int> foundInstances = new List<int>();
 
             // Step therough the nodes. Any that match the
             // specified path are added to the results list.
-            foreach (KeyValuePair<int, NodeManager.node> entry in nodeArray)
+            foreach (KeyValuePair<int, NodeManager.Node> entry in nodeArray)
             {
                 if (entry.Value.nodePath == inpPath)
                 {
@@ -288,11 +291,11 @@ namespace CM.JsonTools
         /// </summary>
         /// <param name="inpInstance">List<int> of instances to check.</int></param>
         /// <returns>List<int> of child nodes.</int></returns>
-        public List<int> listNodeChildren(List<int> inpInstance)
+        public List<int> ListNodeChildren(List<int> inpInstance)
         {
             // Step through the nodes. Ignore any closing nodes and
             // count any the have the specified node as a parent or grandparent.
-            foreach (KeyValuePair<int, NodeManager.node> entry in nodeArray)
+            foreach (KeyValuePair<int, NodeManager.Node> entry in nodeArray)
             {
                 if (inpInstance.Contains(entry.Value.parentNode) &&
                     !inpInstance.Contains(entry.Value.instance))

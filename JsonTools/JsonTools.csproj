@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>CM.JsonTools</RootNamespace>
+    <Description>Tools for extracting data from and writng data to JSON objects.</Description>
+    <Copyright>Colin MIddleton December 2023</Copyright>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl>https://github.com/middleton2020/JsonTools</RepositoryUrl>
+    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
   </PropertyGroup>
 
 </Project>

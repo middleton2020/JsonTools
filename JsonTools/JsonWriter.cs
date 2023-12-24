@@ -59,7 +59,7 @@ namespace CM.JsonTools
                 // Name cannot be null.
                 if (inpName == null)
                 {
-                    throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
+                    Messages.NullName(nameof(inpName));
                 }
 
                 // Create the node and add it to the nodeManager array.
@@ -116,7 +116,7 @@ namespace CM.JsonTools
                 // Object names can't be null.
                 if (inpName == null)
                 {
-                    throw new ArgumentException($"You cannot supply a null value for a name.", nameof(inpName));
+                    Messages.NullName(nameof(inpName));
                 }
 
                 NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Array,
@@ -159,7 +159,7 @@ namespace CM.JsonTools
             {
                 if (string.IsNullOrWhiteSpace(inpName))
                 {
-                    throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
+                    Messages.NullName(nameof(inpName));
                 }
 
                 NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Boolean,
@@ -202,11 +202,11 @@ namespace CM.JsonTools
                 // Validate tyhe inputs.
                 if (string.IsNullOrWhiteSpace(inpName))
                 {
-                    throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
+                    Messages.PropertyName(nameof(inpName));
                 }
                 if (inpValue == null)
                 {
-                    throw new ArgumentException($"You cannot write a null value to the {inpName} node.", nameof(inpValue));
+                    Messages.NullValue(inpName,nameof(inpValue));
                 }
 
                 // Create the node.
@@ -285,7 +285,7 @@ namespace CM.JsonTools
             {
                 if (string.IsNullOrWhiteSpace(inpName))
                 {
-                    throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
+                    Messages.PropertyName(nameof(inpName));
                 }
 
                 AddNode(inpName, inpValue, 2);
@@ -323,17 +323,17 @@ namespace CM.JsonTools
             {
                 if (string.IsNullOrWhiteSpace(inpName))
                 {
-                    throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
+                    Messages.PropertyName(nameof(inpName));
                 }
 
-                string numberFormat;
+                string numberFormat = "";
                 if (inpDecimalPlaces >= 0)
                 {
                     numberFormat = "N" + inpDecimalPlaces.ToString();
                 }
                 else
                 {
-                    throw new ArgumentException($"'{nameof(inpDecimalPlaces)}' cannot be negative.", nameof(inpDecimalPlaces));
+                    Messages.NegativeValue(nameof(inpDecimalPlaces));
                 }
                 NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Decimal,
                         inpName, inpValue.ToString(numberFormat), currentParent);
@@ -355,7 +355,7 @@ namespace CM.JsonTools
             {
                 if (string.IsNullOrWhiteSpace(inpName))
                 {
-                    throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
+                    Messages.PropertyName(nameof(inpName));
                 }
 
                 NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Integer,
@@ -378,11 +378,11 @@ namespace CM.JsonTools
             {
                 if (string.IsNullOrWhiteSpace(inpName))
                 {
-                    throw new ArgumentException($"You must supply a name for a property node.", nameof(inpName));
+                    Messages.PropertyName(nameof(inpName));
                 }
                 if (inpValue == null)
                 {
-                    throw new ArgumentException($"You cannot write a null value to the {inpName} node.", nameof(inpValue));
+                    Messages.NullValue(inpName, nameof(inpValue));
                 }
 
                 NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.String,
@@ -562,14 +562,14 @@ namespace CM.JsonTools
                 // No records have been found.
                 if (inpRequestArray.Length == 0)
                 {
-                    throw new ArgumentOutOfRangeException($"No rercords found for '{inpName}'");
+                    Messages.NoRecords(inpName);
                 }
                 if (!inpMultiple)
                 {
                     // We're not processing multiple nodes, so throw an error.
                     if (inpRequestArray.Length > 1)
                     {
-                        throw new ArgumentOutOfRangeException($"Multiple records exist for '{inpName}'. Use multiple handler.");
+                        Messages.MultipleRecords(inpName);
                     }
                 }
             }
@@ -590,7 +590,7 @@ namespace CM.JsonTools
             {
                 if (inpDelList.Count > inpRequestArray.Length)
                 {
-                    throw new ArgumentException($"'{inpName}' has child values. Use recursive handler.");
+                    Messages.ChildRecords(inpName);
                 }
             }
             catch

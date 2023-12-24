@@ -186,7 +186,7 @@ namespace CM.JsonTools
                 // Make sure that the instance is within the node array's length.
                 if (inpInstance > nodeArray.Count - 1)
                 {
-                    throw new IndexOutOfRangeException($"There is no node {inpInstance}");
+                    Messages.NoNode(inpInstance);
                 }
             }
             catch

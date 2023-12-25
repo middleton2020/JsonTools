@@ -27,8 +27,8 @@ namespace CM.JsonTools.Tests
                             + "}";
             string resultJson = "";
 
-            JsonReader testReader = new JsonReader(makeClass,
-                                                    closeClass,
+            JsonReader testReader = new JsonReader(makeObject,
+                                                    closeObject,
                                                     makeArray,
                                                     closeArray,
                                                     setBoolean,
@@ -60,8 +60,8 @@ namespace CM.JsonTools.Tests
                             + "}";
             string resultJson = "";
 
-            JsonReader testReader = new JsonReader(makeClass,
-                                                    closeClass,
+            JsonReader testReader = new JsonReader(makeObject,
+                                                    closeObject,
                                                     makeArray,
                                                     closeArray,
                                                     setBoolean,
@@ -108,8 +108,8 @@ namespace CM.JsonTools.Tests
                             + "}";
             string resultJson = "";
 
-            JsonReader testReader = new JsonReader(makeClass,
-                                                    closeClass,
+            JsonReader testReader = new JsonReader(makeObject,
+                                                    closeObject,
                                                     makeArray,
                                                     closeArray,
                                                     setBoolean,
@@ -137,8 +137,8 @@ namespace CM.JsonTools.Tests
                             + "}";
             Order resultOrder = null;
 
-            JsonReader testReader = new JsonReader(makeClass,
-                                                    closeClass,
+            JsonReader testReader = new JsonReader(makeObject,
+                                                    closeObject,
                                                     makeArray,
                                                     closeArray,
                                                     setBoolean,
@@ -171,8 +171,8 @@ namespace CM.JsonTools.Tests
                             + "}";
             Order resultOrder = null;
 
-            JsonReader testReader = new JsonReader(makeClass,
-                                                    closeClass,
+            JsonReader testReader = new JsonReader(makeObject,
+                                                    closeObject,
                                                     makeArray,
                                                     closeArray,
                                                     setBoolean,
@@ -224,8 +224,8 @@ namespace CM.JsonTools.Tests
                             + "}";
             Order resultOrder = null;
 
-            JsonReader testReader = new JsonReader(makeClass,
-                                                    closeClass,
+            JsonReader testReader = new JsonReader(makeObject,
+                                                    closeObject,
                                                     makeArray,
                                                     closeArray,
                                                     setBoolean,
@@ -247,8 +247,8 @@ namespace CM.JsonTools.Tests
         #endregion
 
         #region DeligateVariables
-        JsonReader.DeligateMakeObject makeClass;
-        JsonReader.DeligateCloseObject closeClass;
+        JsonReader.DeligateMakeObject makeObject;
+        JsonReader.DeligateCloseObject closeObject;
         JsonReader.DeligateMakeArray makeArray;
         JsonReader.DeligateCloseArray closeArray;
         JsonReader.DeligateSetBoolean setBoolean;
@@ -396,8 +396,8 @@ namespace CM.JsonTools.Tests
         /// </summary>
         private void InitializeText()
         {
-            makeClass = JsonMakeClass;
-            closeClass = JsonCloseClass;
+            makeObject = JsonMakeClass;
+            closeObject = JsonCloseClass;
             makeArray = JsonMakeArray;
             closeArray = JsonCloseArray;
             setBoolean = JsonSetBoolean;
@@ -415,7 +415,7 @@ namespace CM.JsonTools.Tests
         /// <param name="inpObject">The object to which we are adding the property.</param>
         /// <param name="inpPath">The path of item that is added.</param>
         /// <returns>The object with the property added.</returns>
-        public static object ClassMakeClass(string inpName, object inpObject, string inpPath)
+        public static object ClassMakeObject(string inpName, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
             if (inpPath == "items")
@@ -438,7 +438,7 @@ namespace CM.JsonTools.Tests
         /// <param name="inpObject">The object to which we are adding the property.</param>
         /// <param name="inpPath">The path of item that is added.</param>
         /// <returns>The object with the property added.</returns>
-        public static object ClassCloseClass(string inpName, object inpObject, string inpPath)
+        public static object ClassCloseObject(string inpName, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
 
@@ -547,8 +547,8 @@ namespace CM.JsonTools.Tests
         /// </summary>
         private void InitializeClass()
         {
-            makeClass = ClassMakeClass;
-            closeClass = ClassCloseClass;
+            makeObject = ClassMakeObject;
+            closeObject = ClassCloseObject;
             makeArray = ClassMakeArray;
             closeArray = ClassCloseArray;
             setBoolean = ClassSetBoolean;

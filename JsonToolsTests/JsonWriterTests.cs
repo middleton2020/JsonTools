@@ -258,7 +258,6 @@ namespace CM.JsonTools.Tests
             Assert.AreEqual(testJson, resultJson, false);
         }
 
-
         /// <summary>
         /// More complex test with all data types and arrays.
         /// </summary>

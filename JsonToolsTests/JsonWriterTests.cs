@@ -31,6 +31,8 @@ namespace CM.JsonTools.Tests
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
 
+            testWriter.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
 
@@ -55,6 +57,8 @@ namespace CM.JsonTools.Tests
             testWriter.AddNode("parcels", 1);
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
+
+            testWriter.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -83,6 +87,8 @@ namespace CM.JsonTools.Tests
             testWriter.AddNode("value", (decimal)11.50);
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
+
+            testWriter.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -114,6 +120,8 @@ namespace CM.JsonTools.Tests
             testWriter.AddNode("saturdayDelivery", true);
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
+
+            testWriter.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -150,6 +158,8 @@ namespace CM.JsonTools.Tests
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
 
+            testWriter.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
 
@@ -184,6 +194,8 @@ namespace CM.JsonTools.Tests
             testWriter.AddNode("saturdayDelivery", true);
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
+
+            testWriter.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -220,6 +232,8 @@ namespace CM.JsonTools.Tests
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
 
+            testWriter.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
 
@@ -254,6 +268,8 @@ namespace CM.JsonTools.Tests
             testWriter.AddNode("saturdayDelivery", true);
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
+
+            testWriter.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -315,6 +331,8 @@ namespace CM.JsonTools.Tests
             testWriter.AddNode("saturdayDelivery", true);
             testWriter.CloseObject();
             string resultJson = testWriter.WriteJson();
+
+            testWriter.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -382,6 +400,8 @@ namespace CM.JsonTools.Tests
 
             string resultJson = testWriter.WriteJson();
 
+            testWriter.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
 
@@ -445,6 +465,8 @@ namespace CM.JsonTools.Tests
             testWriter.DeleteNode("items",false,true);
 
             string resultJson = testWriter.WriteJson();
+
+            testWriter.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -511,6 +533,8 @@ namespace CM.JsonTools.Tests
 
             string resultJson = testWriter.WriteJson();
 
+            testWriter.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
 
@@ -576,6 +600,8 @@ namespace CM.JsonTools.Tests
 
             string resultJson = testWriter.WriteJson();
 
+            testWriter.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
 
@@ -616,6 +642,8 @@ namespace CM.JsonTools.Tests
                 testWriter.DeleteNode("items");
 
                 string resultJson = testWriter.WriteJson();
+
+                testWriter.Dispose();
 
                 Assert.Fail();
             }
@@ -668,6 +696,8 @@ namespace CM.JsonTools.Tests
 
                 string resultJson = testWriter.WriteJson();
 
+                testWriter.Dispose();
+
                 Assert.Fail();
             }
             catch (ArgumentOutOfRangeException e)
@@ -719,6 +749,8 @@ namespace CM.JsonTools.Tests
 
                 string resultJson = testWriter.WriteJson();
 
+                testWriter.Dispose();
+
                 Assert.Fail();
             }
             catch (ArgumentOutOfRangeException e)
@@ -769,6 +801,8 @@ namespace CM.JsonTools.Tests
 
                 string resultJson = testWriter.WriteJson();
 
+                testWriter.Dispose();
+
                 Assert.Fail();
             }
             catch(ArgumentOutOfRangeException e)
@@ -818,6 +852,8 @@ namespace CM.JsonTools.Tests
                 // There should be only 19 nodes, so 40 is off the end.
                 testWriter.DeleteNode(40,false);
                 string resultJson = testWriter.WriteJson();
+
+                testWriter.Dispose();
 
                 Assert.Fail();
             }

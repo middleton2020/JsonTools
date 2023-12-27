@@ -37,6 +37,8 @@ namespace CM.JsonTools.Tests
                                                     setString);
             resultJson = (string)testReader.ReadJson(testJson, "");
 
+            testReader.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
 
@@ -69,6 +71,8 @@ namespace CM.JsonTools.Tests
                                                     setInteger,
                                                     setString);
             resultJson = (string)testReader.ReadJson(testJson, "");
+
+            testReader.Dispose();
 
             Assert.AreEqual(testJson, resultJson, false);
         }
@@ -118,6 +122,8 @@ namespace CM.JsonTools.Tests
                                                     setString);
             resultJson = (string)testReader.ReadJson(testJson, "");
 
+            testReader.Dispose();
+
             Assert.AreEqual(testJson, resultJson, false);
         }
         #endregion
@@ -146,6 +152,8 @@ namespace CM.JsonTools.Tests
                                                     setInteger,
                                                     setString);
             resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
+
+            testReader.Dispose();
 
             Assert.AreEqual("Bibble", resultOrder.Id, false);
             Assert.AreEqual("Test Name", resultOrder.Name, false);
@@ -180,6 +188,8 @@ namespace CM.JsonTools.Tests
                                                     setInteger,
                                                     setString);
             resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
+
+            testReader.Dispose();
 
             decimal resultValue = 11.50M;
             Assert.AreEqual("Bibble", resultOrder.Id, false);
@@ -233,6 +243,8 @@ namespace CM.JsonTools.Tests
                                                     setInteger,
                                                     setString);
             resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
+
+            testReader.Dispose();
 
             decimal resultValue = 11.50M;
             Assert.AreEqual("Bibble", resultOrder.Id, false);

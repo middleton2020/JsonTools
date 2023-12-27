@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CM.JsonTools
 {
-    class NodeManager
+    class NodeManager : IDisposable
     {
         public enum DataMode
         {
@@ -68,6 +68,7 @@ namespace CM.JsonTools
         public Dictionary<int, Node> nodeArray = new Dictionary<int, Node>();
         // Counter of what the next index number for the node.
         int nodeInstanceCounter = 1;
+        private bool disposedValue;
         #endregion
 
         #region Methods
@@ -305,6 +306,59 @@ namespace CM.JsonTools
             }
 
             return inpInstance;
+        }
+        #endregion
+
+        #region DisposalMethods
+        /// <summary>
+        /// Clear down eresources that are using lots of memory.
+        /// </summary>
+        /// <param name="disposing">Boolean, is this being automatially disposed of, or explicityl disposed of.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources.
+                    nodeArray.Clear();
+                }
+
+                // Note disposing has been done.
+                disposedValue = true;
+            }
+        }
+
+        /// <summary>
+        /// Finalizer for the NodeManager.
+        /// </summary>
+        // Use C# finalizer syntax for finalization code.
+        // This finalizer will run only if the Dispose method
+        // does not get called.
+        // It gives your base class the opportunity to finalize.
+        // Do not provide finalizer in types derived from this class.
+        ~NodeManager()
+        {
+            // Do not re-create Dispose clean-up code here.
+            // Calling Dispose(disposing: false) is optimal in terms of
+            // readability and maintainability.
+            Dispose(disposing: false);
+        }
+
+        /// <summary>
+        /// Active removal of unwanted objects.
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+
+            // This object will be cleaned up by the Dispose method.
+            // Therefore, you should call GC.SuppressFinalize to
+            // take this object off the finalization queue
+            // and prevent finalization code for this object
+            // from executing a second time.
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

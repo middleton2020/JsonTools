@@ -10,6 +10,9 @@ See the included Licence file for details, however my personal requests as the d
 5) If you have any ideas for upgrades to this program, please let me know. I might want to include them.
 6) If you make any use of this program, please let me know what you're doing with it. It's very good for my ego :~D
 
+## Don't Forget
+When you're done with the JsonReader or JsonWriter, don't forget the call the Dispose() method on it to stop all those Node classes hanging around.
+
 ## Running JsonTools
 To understand how to use this module, it is benefitial to take a look at the Test classes, as these provide excellent examples.
 ### Use of the JsonWriter
@@ -69,6 +72,7 @@ This process works by setting up a series of 'nodes' representing properties, ob
 
 `string resultJson = testWriter.WriteJson();   // Output the data as a JSON.`
 
+`testWriter.Dispose();`
 
 This produces the following JSON:
 
@@ -120,27 +124,29 @@ The following JSON is used to populate the class below:
 
 `// Assigns the methods to the deligates.`
 
-`makeClass = ClassMakeClass;`
+`makeClass = MakeClass;`
 
-`closeClass = ClassCloseClass;`
+`closeClass = CloseClass;`
 
-`makeArray = ClassMakeArray;`
+`makeArray = MakeArray;`
 
-`closeArray = ClassCloseArray;`
+`closeArray = CloseArray;`
 
-`setBoolean = ClassSetBoolean;`
+`setBoolean = SetBoolean;`
 
-`setDecimal = ClassSetDecimal;`
+`setDecimal = SetDecimal;`
 
-`setInteger = ClassSetInteger;`
+`setInteger = SetInteger;`
 
-`setString = ClassSetString;`
+`setString = SetString;`
 
 `Order resultOrder = null;    // We need to initialise the object that will be passed into the deligates.`
 
 `JsonReader testReader = new JsonReader(makeObject, closeObject, makeArray, closeArray, setBoolean, setDecimal, setInteger, setString);`
 
 `resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);    // This process outputs the populated object for us.`
+
+`testReader.Dispose();`
 
 `// In this example, we are populating a 'dummy' class which has the following definition.`
 
@@ -174,7 +180,7 @@ The following JSON is used to populate the class below:
 
 `// The blank 'Top' class is handled by the 'else' block. We use the path to identify the Item classes withing the Items array.
 
-`public static object ClassMakeClass(string inpName, object inpObject, string inpPath)`
+`public static object MakeClass(string inpName, object inpObject, string inpPath)`
 
 `{`
 
@@ -200,7 +206,7 @@ The following JSON is used to populate the class below:
 
 `}`
 
-`public static object ClassCloseClass(string inpName, object inpObject, string inpPath)`
+`public static object CloseClass(string inpName, object inpObject, string inpPath)`
 
 `{`
 
@@ -212,7 +218,7 @@ The following JSON is used to populate the class below:
 
 `// There is only one array, so no further processing is required.`
 
-`public static object ClassMakeArray(string inpName, object inpObject, string inpPath)`
+`public static object MakeArray(string inpName, object inpObject, string inpPath)`
 
 `{`
 
@@ -220,7 +226,7 @@ The following JSON is used to populate the class below:
 
 `}`
 
-`public static object ClassCloseArray(string inpName, object inpObject, string inpPath)`
+`public static object CloseArray(string inpName, object inpObject, string inpPath)`
 
 `{`
 
@@ -230,7 +236,7 @@ The following JSON is used to populate the class below:
 
 `// With only one boolean, we can simply assign that. We identify it as a boolean because it has no quotes but can be read into a boolean (i.e. true/false, yes/no, etc.).`
 
-`public static object ClassSetBoolean(string inpName, bool inpValue, object inpObject, string inpPath)`
+`public static object SetBoolean(string inpName, bool inpValue, object inpObject, string inpPath)`
 
 `{`
 
@@ -244,7 +250,7 @@ The following JSON is used to populate the class below:
 
 `// With only one deciaml field, we can simply assign that. We identify it as a decimal because it has no quotes, but does have a decimal point.`
 
-`public static object ClassSetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath)`
+`public static object SetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath)`
 
 `{`
 
@@ -258,7 +264,7 @@ The following JSON is used to populate the class below:
 
 `// With only one integer field, we can simply assign that. We identify it as an integer because it has no quotes and no decimals.`
 
-`public static object ClassSetInteger(string inpName, int inpValue, object inpObject, string inpPath)`
+`public static object SetInteger(string inpName, int inpValue, object inpObject, string inpPath)`
 
 `{`
 
@@ -272,7 +278,7 @@ The following JSON is used to populate the class below:
 
 `// We have several strings, so sort them first by name. Unfortunately there are 2 properties called "name", one in the top level JSON, and one within the Items objects. We can use the 'path' of the node to differentiate between these.`
 
-`public static object ClassSetString(string inpName, string inpValue, object inpObject, string inpPath)`
+`public static object SetString(string inpName, string inpValue, object inpObject, string inpPath)`
 
 `{`
 

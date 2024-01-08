@@ -290,41 +290,61 @@ namespace CM.JsonTools
                 foreach (KeyValuePair<int, NodeManager.Node> entry in nodeManager.nodeArray)
                 {
                     NodeManager.Node CurrentNode = entry.Value;
-                    switch (CurrentNode.dataType)
+                    try     // Catch any errors in converting the data types.
                     {
-                        case NodeManager.DataType.None:
-                            // Ignore these, they have no value
-                            break;
-                        case NodeManager.DataType.Top:
-                            // This is just the top level to ensure that each node has a parent
-                            break;
-                        case NodeManager.DataType.Array:
-                            inpTempObject = makeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case NodeManager.DataType.ArrayClose:
-                            inpTempObject = closeArray(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case NodeManager.DataType.Object:
-                            inpTempObject = makeObject(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case NodeManager.DataType.ObjectClose:
-                            inpTempObject = closeObject(entry.Value.fieldName, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case NodeManager.DataType.Boolean:
-                            bool fieldBoolValue = Convert.ToBoolean(entry.Value.fieldValue);
-                            inpTempObject = setBoolean(entry.Value.fieldName, fieldBoolValue, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case NodeManager.DataType.Decimal:
-                            decimal fieldDecimalValue = Convert.ToDecimal(entry.Value.fieldValue);
-                            inpTempObject = setDecimal(entry.Value.fieldName, fieldDecimalValue, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case NodeManager.DataType.Integer:
-                            int fieldIntegerValue = Convert.ToInt32(entry.Value.fieldValue);
-                            inpTempObject = setInteger(entry.Value.fieldName, fieldIntegerValue, inpTempObject, entry.Value.nodePath);
-                            break;
-                        case NodeManager.DataType.String:
-                            inpTempObject = setString(entry.Value.fieldName, entry.Value.fieldValue, inpTempObject, entry.Value.nodePath);
-                            break;
+                        switch (CurrentNode.dataType)
+                        {
+                            case NodeManager.DataType.None:
+                                // Ignore these, they have no value
+                                break;
+                            case NodeManager.DataType.Top:
+                                // This is just the top level to ensure that each node has a parent
+                                break;
+                            case NodeManager.DataType.Array:
+                                inpTempObject = makeArray(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.ArrayClose:
+                                inpTempObject = closeArray(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.Object:
+                                inpTempObject = makeObject(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.ObjectClose:
+                                inpTempObject = closeObject(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.Boolean:
+                                bool fieldBoolValue = Convert.ToBoolean(CurrentNode.fieldValue);
+                                inpTempObject = setBoolean(CurrentNode.fieldName, fieldBoolValue, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.Decimal:
+                                decimal fieldDecimalValue = Convert.ToDecimal(CurrentNode.fieldValue);
+                                inpTempObject = setDecimal(CurrentNode.fieldName, fieldDecimalValue, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.Integer:
+                                int fieldIntegerValue = Convert.ToInt32(CurrentNode.fieldValue);
+                                inpTempObject = setInteger(CurrentNode.fieldName, fieldIntegerValue, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.String:
+                                inpTempObject = setString(CurrentNode.fieldName, CurrentNode.fieldValue, inpTempObject, entry.Value.nodePath);
+                                break;
+                        }
+                    }
+                    // If we've passed the wrong data type into a deligate, then treat it as a string instead.
+                    catch (System.FormatException e)
+                    {
+                        if (e.Message == "Input string was not in a correct format.")
+                        {
+                            inpTempObject = setString(CurrentNode.fieldName, CurrentNode.fieldValue, inpTempObject, entry.Value.nodePath);
+                        }
+                        else
+                        {
+                            e.Data.Add("UserMessage", $"An error occurred while processing {CurrentNode.fieldName}");
+                            throw e;
+                        }
+                    }
+                    catch
+                    {
+                        throw;
                     }
                 }
                 return inpTempObject;

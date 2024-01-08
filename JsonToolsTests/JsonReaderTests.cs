@@ -258,6 +258,39 @@ namespace CM.JsonTools.Tests
         }
         #endregion
 
+        #region IllegalDataTests
+        /// <summary>
+        /// We found a JSON passing a null value, which was being read as an integer, so let's check for that.
+        /// </summary>
+        [TestMethod()]
+        public void NullValueTest()
+        {
+            InitializeClass();
+            string testJson = "{"
+                            + "\"id\":\"Bibble\""
+                            + ","
+                            + "\"name\":null"
+                            + "}";
+            Order resultOrder = null;
+
+            JsonReader testReader = new JsonReader(makeObject,
+                                                    closeObject,
+                                                    makeArray,
+                                                    closeArray,
+                                                    setBoolean,
+                                                    setDecimal,
+                                                    setInteger,
+                                                    setString);
+            resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
+
+            testReader.Dispose();
+
+            Assert.AreEqual("Bibble", resultOrder.Id, false);
+            Assert.AreEqual("null", resultOrder.Name, false);
+        }
+
+        #endregion
+
         #region DeligateVariables
         JsonReader.DeligateMakeObject makeObject;
         JsonReader.DeligateCloseObject closeObject;

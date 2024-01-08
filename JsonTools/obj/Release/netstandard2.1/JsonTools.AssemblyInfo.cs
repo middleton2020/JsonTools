@@ -12,7 +12,7 @@ using System;
 using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("JsonTools")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyCopyrightAttribute("Colin MIddleton December 2023")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Tools for extracting data from and writng data to JSON objects.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.1")]

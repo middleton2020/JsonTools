@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>JsonTools</id>
+    <version>1.0.0</version>
+    <authors>JsonTools</authors>
+    <description>Tools for extracting data from and writng data to JSON objects.</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Colin MIddleton December 2023</copyright>
+    <repository url="https://github.com/middleton2020/JsonTools" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="C:\Users\colin\source\repos\JsonTools\JsonTools\bin\Debug\netstandard2.1\JsonTools.dll" target="lib\netstandard2.1\JsonTools.dll" />
+  </files>
+</package>

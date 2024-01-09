@@ -300,22 +300,6 @@ namespace CM.JsonTools
         /// Add a property node with a type of decimal.
         /// </summary>
         /// <param name="inpName">Name to give the node.</param>
-        /// <param name="inpValue">Double holding the value of the node.</param>
-        public void AddNode(string inpName, double inpValue)
-        {
-            try
-            {
-                AddNode(inpName, (decimal)inpValue);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-        /// <summary>
-        /// Add a property node with a type of decimal.
-        /// </summary>
-        /// <param name="inpName">Name to give the node.</param>
         /// <param name="inpValue">Decimal holding the value of the node.</param>
         /// <param name="inpDecimalPlaces">Number of decimal places to store to.</param>
         public void AddNode(string inpName, decimal inpValue, int inpDecimalPlaces)
@@ -344,6 +328,59 @@ namespace CM.JsonTools
                 throw;
             }
         }
+        /// <summary>
+        /// Add a property node with a type of decimal.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Double holding the value of the node.</param>
+        public void AddNode(string inpName, double inpValue)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(inpName))
+                {
+                    Messages.PropertyName(nameof(inpName));
+                }
+
+                AddNode(inpName, inpValue, 2);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Add a property node with a type of decimal.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Double holding the value of the node.</param>
+        /// <param name="inpDecimalPlaces">Number of decimal places to store to.</param>
+        public void AddNode(string inpName, double inpValue, int inpDecimalPlaces)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(inpName))
+                {
+                    Messages.PropertyName(nameof(inpName));
+                }
+
+                string numberFormat = "";
+                if (inpDecimalPlaces >= 0)
+                {
+                    numberFormat = "N" + inpDecimalPlaces.ToString();
+                }
+                else
+                {
+                    Messages.NegativeValue(nameof(inpDecimalPlaces));
+                }
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Double,
+                        inpName, inpValue.ToString(numberFormat), currentParent);
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         /// <summary>
         /// Add a property node with a type of integer.
@@ -360,6 +397,28 @@ namespace CM.JsonTools
                 }
 
                 NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.Integer,
+                inpName, inpValue.ToString(), currentParent);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Add a property node with a type of integer.
+        /// </summary>
+        /// <param name="inpName">Name to give the node.</param>
+        /// <param name="inpValue">Long Integer holding the value of the node.</param>
+        public void AddNode(string inpName, long inpValue)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(inpName))
+                {
+                    Messages.PropertyName(nameof(inpName));
+                }
+
+                NodeManager.Node currentNode = nodeManager.AddNode(NodeManager.DataType.LongInt,
                 inpName, inpValue.ToString(), currentParent);
             }
             catch

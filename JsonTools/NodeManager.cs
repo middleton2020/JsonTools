@@ -22,7 +22,9 @@ namespace CM.JsonTools
             ObjectClose,
             Boolean,
             Decimal,
+            Double,
             Integer,
+            LongInt,
             String,
             Top
         }

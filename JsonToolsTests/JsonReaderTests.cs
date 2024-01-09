@@ -33,7 +33,9 @@ namespace CM.JsonTools.Tests
                                                     closeArray,
                                                     setBoolean,
                                                     setDecimal,
+                                                    setDouble,
                                                     setInteger,
+                                                    setLongInt,
                                                     setString);
             resultJson = (string)testReader.ReadJson(testJson, "");
 
@@ -68,7 +70,9 @@ namespace CM.JsonTools.Tests
                                                     closeArray,
                                                     setBoolean,
                                                     setDecimal,
+                                                    setDouble,
                                                     setInteger,
+                                                    setLongInt,
                                                     setString);
             resultJson = (string)testReader.ReadJson(testJson, "");
 
@@ -118,7 +122,9 @@ namespace CM.JsonTools.Tests
                                                     closeArray,
                                                     setBoolean,
                                                     setDecimal,
+                                                    setDouble,
                                                     setInteger,
+                                                    setLongInt,
                                                     setString);
             resultJson = (string)testReader.ReadJson(testJson, "");
 
@@ -149,7 +155,9 @@ namespace CM.JsonTools.Tests
                                                     closeArray,
                                                     setBoolean,
                                                     setDecimal,
+                                                    setDouble,
                                                     setInteger,
+                                                    setLongInt,
                                                     setString);
             resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
 
@@ -185,17 +193,18 @@ namespace CM.JsonTools.Tests
                                                     closeArray,
                                                     setBoolean,
                                                     setDecimal,
+                                                    setDouble,
                                                     setInteger,
+                                                    setLongInt,
                                                     setString);
             resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
 
             testReader.Dispose();
 
-            decimal resultValue = 11.50M;
             Assert.AreEqual("Bibble", resultOrder.Id, false);
             Assert.AreEqual("Test Name", resultOrder.Name, false);
             Assert.AreEqual(1, resultOrder.Parcels);
-            Assert.AreEqual(resultValue, resultOrder.Value);
+            Assert.AreEqual(11.50, resultOrder.Value);
             Assert.AreEqual(true, resultOrder.SaturdayDelivery);
         }
 
@@ -240,17 +249,18 @@ namespace CM.JsonTools.Tests
                                                     closeArray,
                                                     setBoolean,
                                                     setDecimal,
+                                                    setDouble,
                                                     setInteger,
+                                                    setLongInt,
                                                     setString);
             resultOrder = (Order)testReader.ReadJson(testJson, resultOrder);
 
             testReader.Dispose();
 
-            decimal resultValue = 11.50M;
             Assert.AreEqual("Bibble", resultOrder.Id, false);
             Assert.AreEqual("Test Name", resultOrder.Name, false);
             Assert.AreEqual(1, resultOrder.Parcels);
-            Assert.AreEqual(resultValue, resultOrder.Value);
+            Assert.AreEqual(11.50, resultOrder.Value);
             Assert.AreEqual(true, resultOrder.SaturdayDelivery);
             Assert.AreEqual("Box 17", resultOrder.ItemsList[0].ItemName);
             Assert.AreEqual("22 Sphere", resultOrder.ItemsList[1].ItemName);
@@ -298,7 +308,9 @@ namespace CM.JsonTools.Tests
         JsonReader.DeligateCloseArray closeArray;
         JsonReader.DeligateSetBoolean setBoolean;
         JsonReader.DeligateSetDecimal setDecimal;
+        JsonReader.DeligateSetDouble setDouble;
         JsonReader.DeligateSetInteger setInteger;
+        JsonReader.DeligateSetLongInt setLongInt;
         JsonReader.DeligateSetString setString;
         #endregion
 
@@ -402,7 +414,23 @@ namespace CM.JsonTools.Tests
         {
             string tempString = (string)inpObject;
             tempString = AddComma(tempString);
-            tempString += "\"" + inpName + "\":" + Convert.ToString(inpValue);
+
+            tempString += "\"" + inpName + "\":" + inpValue.ToString("F2");
+            return tempString;
+        }
+        /// <summary>
+        /// Add a decimal property to the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
+        public static object JsonSetDouble(string inpName, double inpValue, object inpObject, string inpPath)
+        {
+            string tempString = (string)inpObject;
+            tempString = AddComma(tempString);
+            tempString += "\"" + inpName + "\":" + inpValue.ToString("F2");
             return tempString;
         }
         /// <summary>
@@ -414,6 +442,21 @@ namespace CM.JsonTools.Tests
         /// <param name="inpPath">The path of item that is added.</param>
         /// <returns>The object with the property added.</returns>
         public static object JsonSetInteger(string inpName, int inpValue, object inpObject, string inpPath)
+        {
+            string tempString = (string)inpObject;
+            tempString = AddComma(tempString);
+            tempString += "\"" + inpName + "\":" + Convert.ToString(inpValue);
+            return tempString;
+        }
+        /// <summary>
+        /// Add a long integer property to the JSON string.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
+        public static object JsonSetLongInt(string inpName, long inpValue, object inpObject, string inpPath)
         {
             string tempString = (string)inpObject;
             tempString = AddComma(tempString);
@@ -447,7 +490,9 @@ namespace CM.JsonTools.Tests
             closeArray = JsonCloseArray;
             setBoolean = JsonSetBoolean;
             setDecimal = JsonSetDecimal;
+            setDouble = JsonSetDouble;
             setInteger = JsonSetInteger;
+            setLongInt = JsonSetLongInt;
             setString = JsonSetString;
         }
         #endregion
@@ -537,6 +582,21 @@ namespace CM.JsonTools.Tests
         public static object ClassSetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath)
         {
             Order tempOrder = (Order)inpObject;
+            tempOrder.Value = (double)inpValue;
+
+            return tempOrder;
+        }
+        /// <summary>
+        /// Add a double property to the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
+        public static object ClassSetDouble(string inpName, double inpValue, object inpObject, string inpPath)
+        {
+            Order tempOrder = (Order)inpObject;
             tempOrder.Value = inpValue;
 
             return tempOrder;
@@ -553,6 +613,21 @@ namespace CM.JsonTools.Tests
         {
             Order tempOrder = (Order)inpObject;
             tempOrder.Parcels = inpValue;
+
+            return tempOrder;
+        }
+        /// <summary>
+        /// Add a long integer property to the class object.
+        /// </summary>
+        /// <param name="inpName">Name of the property.</param>
+        /// <param name="inpValue">Value of the property.</param>
+        /// <param name="inpObject">The object to which we are adding the property.</param>
+        /// <param name="inpPath">The path of item that is added.</param>
+        /// <returns>The object with the property added.</returns>
+        public static object ClassSetLongInt(string inpName, long inpValue, object inpObject, string inpPath)
+        {
+            Order tempOrder = (Order)inpObject;
+            tempOrder.Parcels = (int)inpValue;
 
             return tempOrder;
         }
@@ -598,7 +673,9 @@ namespace CM.JsonTools.Tests
             closeArray = ClassCloseArray;
             setBoolean = ClassSetBoolean;
             setDecimal = ClassSetDecimal;
+            setDouble = ClassSetDouble;
             setInteger = ClassSetInteger;
+            setLongInt = ClassSetLongInt;
             setString = ClassSetString;
         }
 
@@ -610,7 +687,7 @@ namespace CM.JsonTools.Tests
             public string Id = "";
             public string Name = "";
             public int Parcels = 0;
-            public decimal Value = 0;
+            public double Value = 0;
             public bool SaturdayDelivery = false;
             public int CurrentItem = 0;
             public List<Items> ItemsList = new List<Items>();

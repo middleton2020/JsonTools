@@ -3,11 +3,12 @@ using System.Collections.Generic;
 
 namespace CM.JsonTools
 {
-    public class JsonReader: IDisposable
+    public class JsonReader : IDisposable
     {
         #region LocalVariables
         private NodeManager nodeManager;
         private bool disposedValue;
+        private bool allowNulls;
         #endregion
 
         #region PassedDeligates
@@ -17,7 +18,9 @@ namespace CM.JsonTools
         public delegate object DeligateCloseArray(string inpName, object inpObject, string inpPath);
         public delegate object DeligateSetBoolean(string inpName, bool inpValue, object inpObject, string inpPath);
         public delegate object DeligateSetDecimal(string inpName, decimal inpValue, object inpObject, string inpPath);
+        public delegate object DeligateSetDouble(string inpName, double inpValue, object inpObject, string inpPath);
         public delegate object DeligateSetInteger(string inpName, int inpValue, object inpObject, string inpPath);
+        public delegate object DeligateSetLongInt(string inpName, long inpValuem, object inpObject, string inpPath);
         public delegate object DeligateSetString(string inpName, string inpValue, object inpObject, string inpPath);
 
         readonly DeligateMakeObject makeObject;
@@ -26,7 +29,9 @@ namespace CM.JsonTools
         readonly DeligateCloseArray closeArray;
         readonly DeligateSetBoolean setBoolean;
         readonly DeligateSetDecimal setDecimal;
+        readonly DeligateSetDouble setDouble;
         readonly DeligateSetInteger setInteger;
+        readonly DeligateSetLongInt setLongInt;
         readonly DeligateSetString setString;
         #endregion
 
@@ -49,7 +54,40 @@ namespace CM.JsonTools
                           DeligateSetBoolean inpSetBoolean,
                           DeligateSetDecimal inpSetDecimal,
                           DeligateSetInteger inpSetInteger,
-                          DeligateSetString inpSetString)
+                          DeligateSetString inpSetString) : this(inpMakeObject, inpCloseObject,
+                              inpMakeArray, inpCloseArray, inpSetBoolean, inpSetDecimal,
+                              inpSetInteger, inpSetString, true)
+        {
+            try
+            {
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Set up the deligates passed from the calling program. We'll use these to build a class from our JSON nodes.
+        /// </summary>
+        /// <param name="inpMakeObject">Method to create a new class</param>
+        /// <param name="inpCloseObject">Method to close that class</param>
+        /// <param name="inpMakeArray">Method to create a new array</param>
+        /// <param name="inpCloseArray">Method to close that array</param>
+        /// <param name="inpSetBoolean">Method to set boolean fields</param>
+        /// <param name="inpSetDecimal">Method to set decimal fields</param>
+        /// <param name="inpSetInteger">Method to set integer fields</param>
+        /// <param name="inpSetString">Method to set string fields</param>
+        /// <param name="inpAllowNulls">Boolean, indicates if null values can be loaded. Defaults to true</param>
+        public JsonReader(DeligateMakeObject inpMakeObject,
+                          DeligateCloseObject inpCloseObject,
+                          DeligateMakeArray inpMakeArray,
+                          DeligateCloseArray inpCloseArray,
+                          DeligateSetBoolean inpSetBoolean,
+                          DeligateSetDecimal inpSetDecimal,
+                          DeligateSetInteger inpSetInteger,
+                          DeligateSetString inpSetString,
+                          bool inpAllowNulls)
         {
             try
             {
@@ -59,14 +97,87 @@ namespace CM.JsonTools
                 closeArray = inpCloseArray;
                 setBoolean = inpSetBoolean;
                 setDecimal = inpSetDecimal;
+                setDouble = FakeDoubleProcessing;
                 setInteger = inpSetInteger;
+                setLongInt = FakeLongIntProcessing;
                 setString = inpSetString;
+                allowNulls = inpAllowNulls;
             }
             catch
             {
                 throw;
             }
         }
+
+        /// <summary>
+        /// Set up the deligates passed from the calling program. We'll use these to build a class from our JSON nodes.
+        /// </summary>
+        /// <param name="inpMakeObject">Method to create a new class</param>
+        /// <param name="inpCloseObject">Method to close that class</param>
+        /// <param name="inpMakeArray">Method to create a new array</param>
+        /// <param name="inpCloseArray">Method to close that array</param>
+        /// <param name="inpSetBoolean">Method to set boolean fields</param>
+        /// <param name="inpSetDecimal">Method to set decimal fields</param>
+        /// <param name="inpSetInteger">Method to set integer fields</param>
+        /// <param name="inpSetString">Method to set string fields</param>
+        public JsonReader(DeligateMakeObject inpMakeObject,
+                          DeligateCloseObject inpCloseObject,
+                          DeligateMakeArray inpMakeArray,
+                          DeligateCloseArray inpCloseArray,
+                          DeligateSetBoolean inpSetBoolean,
+                          DeligateSetDecimal inpSetDecimal,
+                          DeligateSetDouble inpSetDouble,
+                          DeligateSetInteger inpSetInteger,
+                          DeligateSetLongInt inpSetLongInt,
+                          DeligateSetString inpSetString) : this(inpMakeObject, inpCloseObject,
+                              inpMakeArray, inpCloseArray, inpSetBoolean, inpSetDecimal,
+                              inpSetDouble, inpSetInteger, inpSetLongInt, inpSetString, true)
+        {
+            try
+            {
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Set up the deligates passed from the calling program. We'll use these to build a class from our JSON nodes.
+        /// </summary>
+        /// <param name="inpMakeObject">Method to create a new class</param>
+        /// <param name="inpCloseObject">Method to close that class</param>
+        /// <param name="inpMakeArray">Method to create a new array</param>
+        /// <param name="inpCloseArray">Method to close that array</param>
+        /// <param name="inpSetBoolean">Method to set boolean fields</param>
+        /// <param name="inpSetDecimal">Method to set decimal fields</param>
+        /// <param name="inpSetInteger">Method to set integer fields</param>
+        /// <param name="inpSetString">Method to set string fields</param>
+        public JsonReader(DeligateMakeObject inpMakeObject,
+                          DeligateCloseObject inpCloseObject,
+                          DeligateMakeArray inpMakeArray,
+                          DeligateCloseArray inpCloseArray,
+                          DeligateSetBoolean inpSetBoolean,
+                          DeligateSetDecimal inpSetDecimal,
+                          DeligateSetDouble inpSetDouble,
+                          DeligateSetInteger inpSetInteger,
+                          DeligateSetLongInt inpSetLongInt,
+                          DeligateSetString inpSetString,
+                          bool inpAllowNulls) : this(inpMakeObject, inpCloseObject,
+                              inpMakeArray, inpCloseArray, inpSetBoolean, inpSetDecimal,
+                              inpSetInteger, inpSetString, inpAllowNulls)
+        {
+            try
+            {
+                setDouble = inpSetDouble;
+                setLongInt = inpSetLongInt;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         #endregion
 
         #region PublicMethods
@@ -177,6 +288,7 @@ namespace CM.JsonTools
                             case ',':
                                 // We've finished reading the text. If there are no speach marks, but the value is
                                 Type = BooleanCheck(Type, Value);
+                                Type = LongCheck(Type, Value);
 
                                 currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
                                 Mode = NodeManager.DataMode.Name;
@@ -230,7 +342,7 @@ namespace CM.JsonTools
                                 Value = "";
                                 break;
 
-                            // If we finde a '.' in an integer, change it to a decimal.
+                            // If we finde a '.' in an integer, change it to a double (or decimal if it is too big).
                             case '.':
                                 if (Mode == NodeManager.DataMode.Name)
                                 {
@@ -241,7 +353,12 @@ namespace CM.JsonTools
                                     Value += letter;
                                     if (Type == NodeManager.DataType.Integer)
                                     {
-                                        Type = NodeManager.DataType.Decimal;
+                                        Type = NodeManager.DataType.Double;
+                                        // If we've too many decimal places to fit in a double, use a decimal.
+                                        if (Value.Split('.')[1].Length > 9)
+                                        {
+                                            Type = NodeManager.DataType.Decimal;
+                                        }
                                     }
                                 }
                                 break;
@@ -316,6 +433,10 @@ namespace CM.JsonTools
                                 bool fieldBoolValue = Convert.ToBoolean(CurrentNode.fieldValue);
                                 inpTempObject = setBoolean(CurrentNode.fieldName, fieldBoolValue, inpTempObject, CurrentNode.nodePath);
                                 break;
+                            case NodeManager.DataType.Double:
+                                double fieldDoubleValue = Convert.ToDouble(CurrentNode.fieldValue);
+                                inpTempObject = setDouble(CurrentNode.fieldName, fieldDoubleValue, inpTempObject, CurrentNode.nodePath);
+                                break;
                             case NodeManager.DataType.Decimal:
                                 decimal fieldDecimalValue = Convert.ToDecimal(CurrentNode.fieldValue);
                                 inpTempObject = setDecimal(CurrentNode.fieldName, fieldDecimalValue, inpTempObject, CurrentNode.nodePath);
@@ -323,6 +444,10 @@ namespace CM.JsonTools
                             case NodeManager.DataType.Integer:
                                 int fieldIntegerValue = Convert.ToInt32(CurrentNode.fieldValue);
                                 inpTempObject = setInteger(CurrentNode.fieldName, fieldIntegerValue, inpTempObject, CurrentNode.nodePath);
+                                break;
+                            case NodeManager.DataType.LongInt:
+                                long fieldLongIntValue = Convert.ToInt64(CurrentNode.fieldValue);
+                                inpTempObject = setLongInt(CurrentNode.fieldName, fieldLongIntValue, inpTempObject, CurrentNode.nodePath);
                                 break;
                             case NodeManager.DataType.String:
                                 inpTempObject = setString(CurrentNode.fieldName, CurrentNode.fieldValue, inpTempObject, entry.Value.nodePath);
@@ -365,13 +490,54 @@ namespace CM.JsonTools
         {
             try
             {
-                // We've finished reading the text. If there are no speach marks, but the value is
+                // We've finished reading the text. If there are no speach marks, but the value is not actually a number.
                 if (inpType == NodeManager.DataType.Integer)
                 {
                     if (inpValue.ToLower() == Boolean.TrueString.ToLower() ||
                         inpValue.ToLower() == Boolean.FalseString.ToLower())
                     {
                         inpType = NodeManager.DataType.Boolean;
+                    }
+                }
+                return inpType;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Is this node an integer, or is it too big for that?
+        /// </summary>
+        /// <param name="inpType">Pass Node.type in here.</param>
+        /// <param name="inpValue">Pass Node.value in here.</param>
+        /// <returns>Returns Node.type, updated a suitable number value, if appropriate.</returns>
+        private NodeManager.DataType LongCheck(NodeManager.DataType inpType, string inpValue)
+        {
+            try
+            {
+                // We've finished reading the text. If the value is a number, but too big to hold in an Int.
+                if (inpType == NodeManager.DataType.Integer)
+                {
+                    // If the value is less than 10 characters long, it won't exceed the Int size.
+                    if (inpValue.Length > 9)
+                    {
+                        // If the value is more than 18 characters long, it may blow the Long Int, so use a Double. God help us if it exceeds that!
+                        if (inpValue.Length > 18)
+                        {
+                            if (Convert.ToDouble(inpValue) >= long.MaxValue)
+                            {
+                                inpType = NodeManager.DataType.Double;
+                            }
+                        }
+                        // It fits in a Long, so use it.
+                        else
+                        {
+                            if (Convert.ToInt64(inpValue) >= int.MaxValue)
+                            {
+                                inpType = NodeManager.DataType.LongInt;
+                            }
+                        }
                     }
                 }
                 return inpType;
@@ -433,6 +599,60 @@ namespace CM.JsonTools
             // and prevent finalization code for this object
             // from executing a second time.
             GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        #region FakeDeligates
+        /// <summary>
+        /// If no deligate has been provided for Doubles, pass them to the Decimal deligate.
+        /// </summary>
+        /// <param name="inpName">Name of Node</param>
+        /// <param name="inpValue">The value (as a double) for the node.</param>
+        /// <param name="inpTempObject">The object that we're building up.</param>
+        /// <param name="inpPath">Full path of Node</param>
+        /// <returns>The object that we're building up.</returns>
+        private object FakeDoubleProcessing(string inpName, double inpValue, object inpTempObject, string inpPath)
+        {
+            try
+            {
+                // Run the decimal value supplied by the calling program.
+                inpTempObject = setDecimal(inpName, (decimal)inpValue, inpTempObject, inpPath);
+                return inpTempObject;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// If no deligate has been provided for Long Ints, pass them to the Integer deligate.
+        /// </summary>
+        /// <param name="inpName">Name of Node</param>
+        /// <param name="inpValue">The value (as a ulong) for the node.</param>
+        /// <param name="inpTempObject">The object that we're building up.</param>
+        /// <param name="inpPath">Full path of Node</param>
+        /// <returns>The object that we're building up.</returns>
+        private object FakeLongIntProcessing(string inpName, long inpValue, object inpTempObject, string inpPath)
+        {
+            try
+            {
+                // Error if the value is too big.
+                if (inpValue < int.MaxValue)
+                {
+                    // Run the integer version supplied by the calling program.
+                    inpTempObject = setInteger(inpName, (int)inpValue, inpTempObject, inpPath);
+                    return inpTempObject;
+                }
+                else
+                {
+                    throw new InvalidCastException("Your integer it too large to process, you will need a LongInt deligate.");
+                }
+            }
+            catch
+            {
+                throw;
+            }
         }
         #endregion
     }

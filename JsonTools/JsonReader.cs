@@ -58,13 +58,6 @@ namespace CM.JsonTools
                               inpMakeArray, inpCloseArray, inpSetBoolean, inpSetDecimal,
                               inpSetInteger, inpSetString, true)
         {
-            try
-            {
-            }
-            catch
-            {
-                throw;
-            }
         }
 
         /// <summary>
@@ -89,24 +82,17 @@ namespace CM.JsonTools
                           DeligateSetString inpSetString,
                           bool inpAllowNulls)
         {
-            try
-            {
-                makeObject = inpMakeObject;
-                closeObject = inpCloseObject;
-                makeArray = inpMakeArray;
-                closeArray = inpCloseArray;
-                setBoolean = inpSetBoolean;
-                setDecimal = inpSetDecimal;
-                setDouble = FakeDoubleProcessing;
-                setInteger = inpSetInteger;
-                setLongInt = FakeLongIntProcessing;
-                setString = inpSetString;
-                allowNulls = inpAllowNulls;
-            }
-            catch
-            {
-                throw;
-            }
+            makeObject = inpMakeObject;
+            closeObject = inpCloseObject;
+            makeArray = inpMakeArray;
+            closeArray = inpCloseArray;
+            setBoolean = inpSetBoolean;
+            setDecimal = inpSetDecimal;
+            setDouble = FakeDoubleProcessing;
+            setInteger = inpSetInteger;
+            setLongInt = FakeLongIntProcessing;
+            setString = inpSetString;
+            allowNulls = inpAllowNulls;
         }
 
         /// <summary>
@@ -133,13 +119,6 @@ namespace CM.JsonTools
                               inpMakeArray, inpCloseArray, inpSetBoolean, inpSetDecimal,
                               inpSetDouble, inpSetInteger, inpSetLongInt, inpSetString, true)
         {
-            try
-            {
-            }
-            catch
-            {
-                throw;
-            }
         }
 
         /// <summary>
@@ -167,17 +146,9 @@ namespace CM.JsonTools
                               inpMakeArray, inpCloseArray, inpSetBoolean, inpSetDecimal,
                               inpSetInteger, inpSetString, inpAllowNulls)
         {
-            try
-            {
-                setDouble = inpSetDouble;
-                setLongInt = inpSetLongInt;
-            }
-            catch
-            {
-                throw;
-            }
+            setDouble = inpSetDouble;
+            setLongInt = inpSetLongInt;
         }
-
         #endregion
 
         #region PublicMethods
@@ -189,21 +160,14 @@ namespace CM.JsonTools
         /// <returns>inpTempObject once all data has been written to it.</returns>
         public object ReadJson(string inpJsonObject, object inpTempObject)
         {
-            try
-            {
-                // Prepare the node tools/storage.
-                nodeManager = new NodeManager();
-                // Populate the Node records.
-                BreakIntoNodes(inpJsonObject);
-                // Read the Node records to build the requested output.
-                inpTempObject = OutputData(inpTempObject);
+            // Prepare the node tools/storage.
+            nodeManager = new NodeManager();
+            // Populate the Node records.
+            BreakIntoNodes(inpJsonObject);
+            // Read the Node records to build the requested output.
+            inpTempObject = OutputData(inpTempObject);
 
-                return inpTempObject;
-            }
-            catch
-            {
-                throw;
-            }
+            return inpTempObject;
         }
         #endregion
 
@@ -214,38 +178,155 @@ namespace CM.JsonTools
         /// <param name="inpJsonObject">The JSON to read, passed as a string</param>
         private void BreakIntoNodes(string inpJsonObject)
         {
-            try
+            // The escape character so that we can by-pass it.
+            const char escapeCharacter = (char)92;
+
+            // Default the variables.
+            NodeManager.DataMode Mode = NodeManager.DataMode.Name;
+            NodeManager.DataType Type = NodeManager.DataType.Object;
+            string Name = "";
+            string Value = "";
+            // Control variables
+            int Parent = 1;
+            NodeManager.Node ParentNode = nodeManager.AddNode(NodeManager.DataType.Top, "", "", 0);
+            Boolean InString = false;
+            NodeManager.Node currentNode = null;
+
+            // Break the JSON up into an array of characters.
+            char[] byCharacters = inpJsonObject.ToCharArray();
+
+            // Then step through it, character by character.
+            foreach (char letter in byCharacters)
             {
-                // The escape character so that we can by-pass it.
-                const char escapeCharacter = (char)92;
-
-                // Default the variables.
-                NodeManager.DataMode Mode = NodeManager.DataMode.Name;
-                NodeManager.DataType Type = NodeManager.DataType.Object;
-                string Name = "";
-                string Value = "";
-                // Control variables
-                int Parent = 1;
-                NodeManager.Node ParentNode = nodeManager.AddNode(NodeManager.DataType.Top, "", "", 0);
-                Boolean InString = false;
-                NodeManager.Node currentNode = null;
-
-                // Break the JSON up into an array of characters.
-                char[] byCharacters = inpJsonObject.ToCharArray();
-
-                // Then step through it, character by character.
-                foreach (char letter in byCharacters)
+                // Rebuild any quoted strings to make use them properly.
+                if (InString == true)
                 {
-                    // Rebuild any quoted strings to make use them properly.
-                    if (InString == true)
+                    // Close the string.
+                    if (letter == '"')
                     {
-                        // Close the string.
-                        if (letter == '"')
+                        InString = false;
+                    }
+                    else
+                    {
+                        if (Mode == NodeManager.DataMode.Name)
                         {
-                            InString = false;
+                            Name += letter;
                         }
-                        else
+                        else if (Mode == NodeManager.DataMode.Value)
                         {
+                            Value += letter;
+                        }
+                    }
+                }
+                else
+                {
+                    switch (letter)
+                    {
+                        case escapeCharacter:
+                            // We simply skip over escape characters.
+                            break;
+
+                        // Open a string.
+                        case '"':
+                            if (Mode == NodeManager.DataMode.Value)
+                            {
+                                Type = NodeManager.DataType.String;
+                            }
+                            else
+                            {
+                                Mode = NodeManager.DataMode.Name;
+                            }
+                            InString = true;
+                            break;
+
+                        // The colon indicates that we're moving from name to value.
+                        case ':':
+                            Mode = NodeManager.DataMode.Value;
+                            Type = NodeManager.DataType.Integer;    // Default to this.
+                            Value = "";
+                            break;
+
+                        // Commas separate the elements (i.e. nodes).
+                        case ',':
+                            // We've finished reading the text. If there are no speach marks, but the value is
+                            Type = BooleanCheck(Type, Value);
+                            Type = LongCheck(Type, Value);
+
+                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                            Mode = NodeManager.DataMode.Name;
+                            Name = "";
+                            Value = "";
+                            break;
+
+                        // Start processing a JSON group.
+                        case '{':
+                            Type = NodeManager.DataType.Object;
+                            Value = "";
+                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                            Parent = currentNode.instance;
+                            ParentNode = nodeManager.nodeArray[Parent];
+                            Mode = NodeManager.DataMode.Name;
+                            Type = NodeManager.DataType.Integer;
+                            Name = "";
+                            break;
+
+                        // and close that JSON group.
+                        case '}':
+                            // We've finished reading the text. If there are no speach marks, but the value is
+                            Type = BooleanCheck(Type, Value);
+
+                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                            Type = NodeManager.DataType.ObjectClose;
+                            Name = "";
+                            Value = "";
+                            break;
+
+                        // Start processing an array of data.
+                        case '[':
+                            Type = NodeManager.DataType.Array;
+                            Value = "";
+                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                            Parent = currentNode.instance;
+                            ParentNode = nodeManager.nodeArray[Parent];
+                            Mode = NodeManager.DataMode.Name;
+                            Type = NodeManager.DataType.Integer;
+                            Name = "";
+                            break;
+
+                        // Finish processing the array.
+                        case ']':
+                            // We've finished reading the text. If there are no speach marks, but the value is
+                            Type = BooleanCheck(Type, Value);
+
+                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                            Type = NodeManager.DataType.ArrayClose;
+                            Name = "";
+                            Value = "";
+                            break;
+
+                        // If we finde a '.' in an integer, change it to a double (or decimal if it is too big).
+                        case '.':
+                            if (Mode == NodeManager.DataMode.Name)
+                            {
+                                Name += letter;
+                            }
+                            else if (Mode == NodeManager.DataMode.Value)
+                            {
+                                Value += letter;
+                                if (Type == NodeManager.DataType.Integer)
+                                {
+                                    Type = NodeManager.DataType.Double;
+                                    // If we've too many decimal places to fit in a double, use a decimal.
+                                    if (Value.Split('.')[1].Length > 9)
+                                    {
+                                        Type = NodeManager.DataType.Decimal;
+                                    }
+                                }
+                            }
+                            break;
+
+                        // Any other character is just added to the current details.
+                        default:
                             if (Mode == NodeManager.DataMode.Name)
                             {
                                 Name += letter;
@@ -254,144 +335,20 @@ namespace CM.JsonTools
                             {
                                 Value += letter;
                             }
-                        }
-                    }
-                    else
-                    {
-                        switch (letter)
-                        {
-                            case escapeCharacter:
-                                // We simply skip over escape characters.
-                                break;
-
-                            // Open a string.
-                            case '"':
-                                if (Mode == NodeManager.DataMode.Value)
-                                {
-                                    Type = NodeManager.DataType.String;
-                                }
-                                else
-                                {
-                                    Mode = NodeManager.DataMode.Name;
-                                }
-                                InString = true;
-                                break;
-
-                            // The colon indicates that we're moving from name to value.
-                            case ':':
-                                Mode = NodeManager.DataMode.Value;
-                                Type = NodeManager.DataType.Integer;    // Default to this.
-                                Value = "";
-                                break;
-
-                            // Commas separate the elements (i.e. nodes).
-                            case ',':
-                                // We've finished reading the text. If there are no speach marks, but the value is
-                                Type = BooleanCheck(Type, Value);
-                                Type = LongCheck(Type, Value);
-
-                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                                Mode = NodeManager.DataMode.Name;
-                                Name = "";
-                                Value = "";
-                                break;
-
-                            // Start processing a JSON group.
-                            case '{':
-                                Type = NodeManager.DataType.Object;
-                                Value = "";
-                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                                Parent = currentNode.instance;
-                                ParentNode = nodeManager.nodeArray[Parent];
-                                Mode = NodeManager.DataMode.Name;
-                                Type = NodeManager.DataType.Integer;
-                                Name = "";
-                                break;
-
-                            // and close that JSON group.
-                            case '}':
-                                // We've finished reading the text. If there are no speach marks, but the value is
-                                Type = BooleanCheck(Type, Value);
-
-                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                                Type = NodeManager.DataType.ObjectClose;
-                                Name = "";
-                                Value = "";
-                                break;
-
-                            // Start processing an array of data.
-                            case '[':
-                                Type = NodeManager.DataType.Array;
-                                Value = "";
-                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                                Parent = currentNode.instance;
-                                ParentNode = nodeManager.nodeArray[Parent];
-                                Mode = NodeManager.DataMode.Name;
-                                Type = NodeManager.DataType.Integer;
-                                Name = "";
-                                break;
-
-                            // Finish processing the array.
-                            case ']':
-                                // We've finished reading the text. If there are no speach marks, but the value is
-                                Type = BooleanCheck(Type, Value);
-
-                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                                Type = NodeManager.DataType.ArrayClose;
-                                Name = "";
-                                Value = "";
-                                break;
-
-                            // If we finde a '.' in an integer, change it to a double (or decimal if it is too big).
-                            case '.':
-                                if (Mode == NodeManager.DataMode.Name)
-                                {
-                                    Name += letter;
-                                }
-                                else if (Mode == NodeManager.DataMode.Value)
-                                {
-                                    Value += letter;
-                                    if (Type == NodeManager.DataType.Integer)
-                                    {
-                                        Type = NodeManager.DataType.Double;
-                                        // If we've too many decimal places to fit in a double, use a decimal.
-                                        if (Value.Split('.')[1].Length > 9)
-                                        {
-                                            Type = NodeManager.DataType.Decimal;
-                                        }
-                                    }
-                                }
-                                break;
-
-                            // Any other character is just added to the current details.
-                            default:
-                                if (Mode == NodeManager.DataMode.Name)
-                                {
-                                    Name += letter;
-                                }
-                                else if (Mode == NodeManager.DataMode.Value)
-                                {
-                                    Value += letter;
-                                }
-                                break;
-                        }
-                    }
-
-                    // If we're closing a JSON element or Array, process that before moving onto the next letter.
-                    if (Type == NodeManager.DataType.ObjectClose || Type == NodeManager.DataType.ArrayClose)
-                    {
-                        ParentNode = nodeManager.nodeArray[Parent];
-                        Name = ParentNode.fieldName;
-                        nodeManager.AddNode(Type, Name, Value, Parent);
-                        Parent = ParentNode.parentNode;
-                        Mode = NodeManager.DataMode.Name;
-                        Type = NodeManager.DataType.None;
+                            break;
                     }
                 }
-            }
-            catch
-            {
-                throw;
+
+                // If we're closing a JSON element or Array, process that before moving onto the next letter.
+                if (Type == NodeManager.DataType.ObjectClose || Type == NodeManager.DataType.ArrayClose)
+                {
+                    ParentNode = nodeManager.nodeArray[Parent];
+                    Name = ParentNode.fieldName;
+                    nodeManager.AddNode(Type, Name, Value, Parent);
+                    Parent = ParentNode.parentNode;
+                    Mode = NodeManager.DataMode.Name;
+                    Type = NodeManager.DataType.None;
+                }
             }
         }
 
@@ -402,82 +359,71 @@ namespace CM.JsonTools
         /// <returns>inpTempObject, now full of data.</returns>
         private object OutputData(object inpTempObject)
         {
-            try
+            foreach (KeyValuePair<int, NodeManager.Node> entry in nodeManager.nodeArray)
             {
-                foreach (KeyValuePair<int, NodeManager.Node> entry in nodeManager.nodeArray)
+                NodeManager.Node CurrentNode = entry.Value;
+                try     // Catch any errors in converting the data types.
                 {
-                    NodeManager.Node CurrentNode = entry.Value;
-                    try     // Catch any errors in converting the data types.
+                    switch (CurrentNode.dataType)
                     {
-                        switch (CurrentNode.dataType)
-                        {
-                            case NodeManager.DataType.None:
-                                // Ignore these, they have no value
-                                break;
-                            case NodeManager.DataType.Top:
-                                // This is just the top level to ensure that each node has a parent
-                                break;
-                            case NodeManager.DataType.Array:
-                                inpTempObject = makeArray(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.ArrayClose:
-                                inpTempObject = closeArray(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.Object:
-                                inpTempObject = makeObject(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.ObjectClose:
-                                inpTempObject = closeObject(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.Boolean:
-                                bool fieldBoolValue = Convert.ToBoolean(CurrentNode.fieldValue);
-                                inpTempObject = setBoolean(CurrentNode.fieldName, fieldBoolValue, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.Double:
-                                double fieldDoubleValue = Convert.ToDouble(CurrentNode.fieldValue);
-                                inpTempObject = setDouble(CurrentNode.fieldName, fieldDoubleValue, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.Decimal:
-                                decimal fieldDecimalValue = Convert.ToDecimal(CurrentNode.fieldValue);
-                                inpTempObject = setDecimal(CurrentNode.fieldName, fieldDecimalValue, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.Integer:
-                                int fieldIntegerValue = Convert.ToInt32(CurrentNode.fieldValue);
-                                inpTempObject = setInteger(CurrentNode.fieldName, fieldIntegerValue, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.LongInt:
-                                long fieldLongIntValue = Convert.ToInt64(CurrentNode.fieldValue);
-                                inpTempObject = setLongInt(CurrentNode.fieldName, fieldLongIntValue, inpTempObject, CurrentNode.nodePath);
-                                break;
-                            case NodeManager.DataType.String:
-                                inpTempObject = setString(CurrentNode.fieldName, CurrentNode.fieldValue, inpTempObject, entry.Value.nodePath);
-                                break;
-                        }
-                    }
-                    // If we've passed the wrong data type into a deligate, then treat it as a string instead.
-                    catch (System.FormatException e)
-                    {
-                        if (e.Message == "Input string was not in a correct format.")
-                        {
+                        case NodeManager.DataType.None:
+                            // Ignore these, they have no value
+                            break;
+                        case NodeManager.DataType.Top:
+                            // This is just the top level to ensure that each node has a parent
+                            break;
+                        case NodeManager.DataType.Array:
+                            inpTempObject = makeArray(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.ArrayClose:
+                            inpTempObject = closeArray(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.Object:
+                            inpTempObject = makeObject(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.ObjectClose:
+                            inpTempObject = closeObject(CurrentNode.fieldName, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.Boolean:
+                            bool fieldBoolValue = Convert.ToBoolean(CurrentNode.fieldValue);
+                            inpTempObject = setBoolean(CurrentNode.fieldName, fieldBoolValue, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.Double:
+                            double fieldDoubleValue = Convert.ToDouble(CurrentNode.fieldValue);
+                            inpTempObject = setDouble(CurrentNode.fieldName, fieldDoubleValue, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.Decimal:
+                            decimal fieldDecimalValue = Convert.ToDecimal(CurrentNode.fieldValue);
+                            inpTempObject = setDecimal(CurrentNode.fieldName, fieldDecimalValue, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.Integer:
+                            int fieldIntegerValue = Convert.ToInt32(CurrentNode.fieldValue);
+                            inpTempObject = setInteger(CurrentNode.fieldName, fieldIntegerValue, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.LongInt:
+                            long fieldLongIntValue = Convert.ToInt64(CurrentNode.fieldValue);
+                            inpTempObject = setLongInt(CurrentNode.fieldName, fieldLongIntValue, inpTempObject, CurrentNode.nodePath);
+                            break;
+                        case NodeManager.DataType.String:
                             inpTempObject = setString(CurrentNode.fieldName, CurrentNode.fieldValue, inpTempObject, entry.Value.nodePath);
-                        }
-                        else
-                        {
-                            e.Data.Add("UserMessage", $"An error occurred while processing {CurrentNode.fieldName}");
-                            throw e;
-                        }
-                    }
-                    catch
-                    {
-                        throw;
+                            break;
                     }
                 }
-                return inpTempObject;
+                // If we've passed the wrong data type into a deligate, then treat it as a string instead.
+                catch (System.FormatException e)
+                {
+                    if (e.Message == "Input string was not in a correct format.")
+                    {
+                        inpTempObject = setString(CurrentNode.fieldName, CurrentNode.fieldValue, inpTempObject, entry.Value.nodePath);
+                    }
+                    else
+                    {
+                        e.Data.Add("UserMessage", $"An error occurred while processing {CurrentNode.fieldName}");
+                        throw e;
+                    }
+                }
             }
-            catch
-            {
-                throw;
-            }
+            return inpTempObject;
         }
 
         /// <summary>
@@ -488,23 +434,16 @@ namespace CM.JsonTools
         /// <returns>Returns Node.type, updated as a boolean if appropriate.</returns>
         private NodeManager.DataType BooleanCheck(NodeManager.DataType inpType, string inpValue)
         {
-            try
+            // We've finished reading the text. If there are no speach marks, but the value is not actually a number.
+            if (inpType == NodeManager.DataType.Integer)
             {
-                // We've finished reading the text. If there are no speach marks, but the value is not actually a number.
-                if (inpType == NodeManager.DataType.Integer)
+                if (inpValue.ToLower() == Boolean.TrueString.ToLower() ||
+                    inpValue.ToLower() == Boolean.FalseString.ToLower())
                 {
-                    if (inpValue.ToLower() == Boolean.TrueString.ToLower() ||
-                        inpValue.ToLower() == Boolean.FalseString.ToLower())
-                    {
-                        inpType = NodeManager.DataType.Boolean;
-                    }
+                    inpType = NodeManager.DataType.Boolean;
                 }
-                return inpType;
             }
-            catch
-            {
-                throw;
-            }
+            return inpType;
         }
         /// <summary>
         /// Is this node an integer, or is it too big for that?
@@ -514,38 +453,31 @@ namespace CM.JsonTools
         /// <returns>Returns Node.type, updated a suitable number value, if appropriate.</returns>
         private NodeManager.DataType LongCheck(NodeManager.DataType inpType, string inpValue)
         {
-            try
+            // We've finished reading the text. If the value is a number, but too big to hold in an Int.
+            if (inpType == NodeManager.DataType.Integer)
             {
-                // We've finished reading the text. If the value is a number, but too big to hold in an Int.
-                if (inpType == NodeManager.DataType.Integer)
+                // If the value is less than 10 characters long, it won't exceed the Int size.
+                if (inpValue.Length > 9)
                 {
-                    // If the value is less than 10 characters long, it won't exceed the Int size.
-                    if (inpValue.Length > 9)
+                    // If the value is more than 18 characters long, it may blow the Long Int, so use a Double. God help us if it exceeds that!
+                    if (inpValue.Length > 18)
                     {
-                        // If the value is more than 18 characters long, it may blow the Long Int, so use a Double. God help us if it exceeds that!
-                        if (inpValue.Length > 18)
+                        if (Convert.ToDouble(inpValue) >= long.MaxValue)
                         {
-                            if (Convert.ToDouble(inpValue) >= long.MaxValue)
-                            {
-                                inpType = NodeManager.DataType.Double;
-                            }
+                            inpType = NodeManager.DataType.Double;
                         }
-                        // It fits in a Long, so use it.
-                        else
+                    }
+                    // It fits in a Long, so use it.
+                    else
+                    {
+                        if (Convert.ToInt64(inpValue) >= int.MaxValue)
                         {
-                            if (Convert.ToInt64(inpValue) >= int.MaxValue)
-                            {
-                                inpType = NodeManager.DataType.LongInt;
-                            }
+                            inpType = NodeManager.DataType.LongInt;
                         }
                     }
                 }
-                return inpType;
             }
-            catch
-            {
-                throw;
-            }
+            return inpType;
         }
         #endregion
 
@@ -613,16 +545,9 @@ namespace CM.JsonTools
         /// <returns>The object that we're building up.</returns>
         private object FakeDoubleProcessing(string inpName, double inpValue, object inpTempObject, string inpPath)
         {
-            try
-            {
-                // Run the decimal value supplied by the calling program.
-                inpTempObject = setDecimal(inpName, (decimal)inpValue, inpTempObject, inpPath);
-                return inpTempObject;
-            }
-            catch
-            {
-                throw;
-            }
+            // Run the decimal value supplied by the calling program.
+            inpTempObject = setDecimal(inpName, (decimal)inpValue, inpTempObject, inpPath);
+            return inpTempObject;
         }
 
         /// <summary>
@@ -635,23 +560,16 @@ namespace CM.JsonTools
         /// <returns>The object that we're building up.</returns>
         private object FakeLongIntProcessing(string inpName, long inpValue, object inpTempObject, string inpPath)
         {
-            try
+            // Error if the value is too big.
+            if (inpValue < int.MaxValue)
             {
-                // Error if the value is too big.
-                if (inpValue < int.MaxValue)
-                {
-                    // Run the integer version supplied by the calling program.
-                    inpTempObject = setInteger(inpName, (int)inpValue, inpTempObject, inpPath);
-                    return inpTempObject;
-                }
-                else
-                {
-                    throw new InvalidCastException("Your integer it too large to process, you will need a LongInt deligate.");
-                }
+                // Run the integer version supplied by the calling program.
+                inpTempObject = setInteger(inpName, (int)inpValue, inpTempObject, inpPath);
+                return inpTempObject;
             }
-            catch
+            else
             {
-                throw;
+                throw new InvalidCastException("Your integer it too large to process, you will need a LongInt deligate.");
             }
         }
         #endregion

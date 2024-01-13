@@ -13,7 +13,7 @@
     "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "restore": {
       "projectUniqueName": "C:\\Users\\colin\\source\\repos\\JsonTools\\JsonTools\\JsonTools.csproj",
       "projectName": "JsonTools",

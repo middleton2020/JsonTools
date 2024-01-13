@@ -7,7 +7,7 @@
   "targets": {
     ".NETStandard,Version=v2.1": {},
     ".NETStandard,Version=v2.1/": {
-      "JsonTools/1.0.0": {
+      "JsonTools/1.0.1": {
         "runtime": {
           "JsonTools.dll": {}
         }
@@ -15,7 +15,7 @@
     }
   },
   "libraries": {
-    "JsonTools/1.0.0": {
+    "JsonTools/1.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

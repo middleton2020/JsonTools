@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v5.0": {
       "JsonToolsTests/1.0.0": {
         "dependencies": {
-          "JsonTools": "1.0.0",
+          "JsonTools": "1.0.1",
           "MSTest.TestAdapter": "2.2.3",
           "MSTest.TestFramework": "2.2.3",
           "Microsoft.NET.Test.Sdk": "16.9.4",
@@ -1077,7 +1077,7 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
-      "JsonTools/1.0.0": {
+      "JsonTools/1.0.1": {
         "runtime": {
           "JsonTools.dll": {}
         }
@@ -1706,7 +1706,7 @@
       "path": "system.xml.xdocument/4.3.0",
       "hashPath": "system.xml.xdocument.4.3.0.nupkg.sha512"
     },
-    "JsonTools/1.0.0": {
+    "JsonTools/1.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

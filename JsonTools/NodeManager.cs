@@ -84,26 +84,19 @@ namespace CM.JsonTools
         /// <returns>The new node object</returns>
         public Node AddNode(DataType inpType, string inpName, string inpValue, int inpParent)
         {
-            try
+            if (inpType == DataType.None)
             {
-                if (inpType == DataType.None)
-                {
-                    // If no data type has been provided, then return the current node.
-                    return nodeArray[nodeInstanceCounter - 1];
-                }
-                else
-                {
-                    // Create a new node, add it to the nodeArray and return the new node.
-                    Node NodeEntry = new Node(nodeInstanceCounter, inpName, inpValue, inpType, inpParent);
-                    nodeInstanceCounter += 1;
-                    nodeArray.Add(NodeEntry.instance, NodeEntry);
-                    NodeEntry.nodePath = BuildPath(NodeEntry.instance);
-                    return NodeEntry;
-                }
+                // If no data type has been provided, then return the current node.
+                return nodeArray[nodeInstanceCounter - 1];
             }
-            catch
+            else
             {
-                throw;
+                // Create a new node, add it to the nodeArray and return the new node.
+                Node NodeEntry = new Node(nodeInstanceCounter, inpName, inpValue, inpType, inpParent);
+                nodeInstanceCounter += 1;
+                nodeArray.Add(NodeEntry.instance, NodeEntry);
+                NodeEntry.nodePath = BuildPath(NodeEntry.instance);
+                return NodeEntry;
             }
         }
 
@@ -113,20 +106,13 @@ namespace CM.JsonTools
         /// <param name="deleteList">List<int> of instances to  be deleted.</int></param>
         public void DeleteNodeList(List<int> deleteList)
         {
-            try
+            // Mark fields that we want to delete as deleted.
+            foreach (int entry in deleteList)
             {
-                // Mark fields that we want to delete as deleted.
-                foreach (int entry in deleteList)
-                {
-                    nodeArray[entry].dataType = DataType.Deleted;
-                }
-                // Rebuild the array, excluding the nodes marked as deleted.
-                RenumberNodes();
+                nodeArray[entry].dataType = DataType.Deleted;
             }
-            catch
-            {
-                throw;
-            }
+            // Rebuild the array, excluding the nodes marked as deleted.
+            RenumberNodes();
         }
 
         /// <summary>
@@ -134,48 +120,41 @@ namespace CM.JsonTools
         /// </summary>
         public void RenumberNodes()
         {
-            try
-            {
-                // Initial variables.
-                Dictionary<int, Node> tempNodeArray = new Dictionary<int, Node>();
-                int newCounter = 1;
-                int currentParent = 0;
+            // Initial variables.
+            Dictionary<int, Node> tempNodeArray = new Dictionary<int, Node>();
+            int newCounter = 1;
+            int currentParent = 0;
 
-                // Copy the nodes that we're not deleting to a new array and re-number them.
-                foreach (KeyValuePair<int, Node> entry in nodeArray)
+            // Copy the nodes that we're not deleting to a new array and re-number them.
+            foreach (KeyValuePair<int, Node> entry in nodeArray)
+            {
+                if (entry.Value.dataType == DataType.Deleted)
                 {
-                    if (entry.Value.dataType == DataType.Deleted)
-                    {
-                        // This is deleted, so don't copy it.
-                    }
-                    else
-                    {
-                        tempNodeArray.Add(newCounter, entry.Value);
-                        // Set the new parent number.
-                        tempNodeArray[newCounter].parentNode = currentParent;
-                        if (tempNodeArray[newCounter].dataType == DataType.Array ||
-                           tempNodeArray[newCounter].dataType == DataType.Object ||
-                           tempNodeArray[newCounter].dataType == DataType.Top)
-                        {
-                            currentParent += 1;
-                        }
-                        else if (tempNodeArray[newCounter].dataType == DataType.ArrayClose ||
-                                 tempNodeArray[newCounter].dataType == DataType.ObjectClose)
-                        {
-                            currentParent = tempNodeArray[currentParent].parentNode;
-                        }
-                        newCounter += 1;
-                    }
+                    // This is deleted, so don't copy it.
                 }
+                else
+                {
+                    tempNodeArray.Add(newCounter, entry.Value);
+                    // Set the new parent number.
+                    tempNodeArray[newCounter].parentNode = currentParent;
+                    if (tempNodeArray[newCounter].dataType == DataType.Array ||
+                       tempNodeArray[newCounter].dataType == DataType.Object ||
+                       tempNodeArray[newCounter].dataType == DataType.Top)
+                    {
+                        currentParent += 1;
+                    }
+                    else if (tempNodeArray[newCounter].dataType == DataType.ArrayClose ||
+                             tempNodeArray[newCounter].dataType == DataType.ObjectClose)
+                    {
+                        currentParent = tempNodeArray[currentParent].parentNode;
+                    }
+                    newCounter += 1;
+                }
+            }
 
-                // Copy the new array over the original one.
-                nodeArray.Clear();
-                nodeArray = tempNodeArray;
-            }
-            catch
-            {
-                throw;
-            }
+            // Copy the new array over the original one.
+            nodeArray.Clear();
+            nodeArray = tempNodeArray;
         }
 
         /// <summary>
@@ -184,17 +163,10 @@ namespace CM.JsonTools
         /// <param name="inpInstance">Int, instance to check.</param>
         public void ValidateInstance(int inpInstance)
         {
-            try
+            // Make sure that the instance is within the node array's length.
+            if (inpInstance > nodeArray.Count - 1)
             {
-                // Make sure that the instance is within the node array's length.
-                if (inpInstance > nodeArray.Count - 1)
-                {
-                    Messages.NoNode(inpInstance);
-                }
-            }
-            catch
-            {
-                throw;
+                Messages.NoNode(inpInstance);
             }
         }
 
@@ -205,43 +177,36 @@ namespace CM.JsonTools
         /// <returns>String of path.</returns>
         private string BuildPath(int inpInstance)
         {
-            try
-            {
-                string nodePath = "";
+            string nodePath = "";
 
-                // Instance 0 returns a blank path.
-                if (inpInstance > 0)
+            // Instance 0 returns a blank path.
+            if (inpInstance > 0)
+            {
+                // Call self to get parent's path.
+                nodePath = BuildPath(nodeArray[inpInstance].parentNode);
+                // Always end with the current field's name.
+                string tempFieldName = nodeArray[inpInstance].fieldName;
+                if (tempFieldName != "")
                 {
-                    // Call self to get parent's path.
-                    nodePath = BuildPath(nodeArray[inpInstance].parentNode);
-                    // Always end with the current field's name.
-                    string tempFieldName = nodeArray[inpInstance].fieldName;
-                    if (tempFieldName != "")
+                    // If path already blank, just return the field name.
+                    if (nodePath == "")
                     {
-                        // If path already blank, just return the field name.
-                        if (nodePath == "")
-                        {
-                            nodePath = tempFieldName;
-                        }
-                        // If no field name, then nothing to add.
-                        else if (tempFieldName == "")
-                        {
-                            // nodePath = nodePath;
-                        }
-                        // Otherwise add the name to the end of the path.
-                        else
-                        {
-                            nodePath = nodePath + "." + tempFieldName;
-                        }
+                        nodePath = tempFieldName;
+                    }
+                    // If no field name, then nothing to add.
+                    else if (tempFieldName == "")
+                    {
+                        // nodePath = nodePath;
+                    }
+                    // Otherwise add the name to the end of the path.
+                    else
+                    {
+                        nodePath = nodePath + "." + tempFieldName;
                     }
                 }
+            }
 
-                return nodePath;
-            }
-            catch
-            {
-                throw;
-            }
+            return nodePath;
         }
         #endregion
 

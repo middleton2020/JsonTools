@@ -1,3 +1,5 @@
 is_global = true
 build_property.RootNamespace = CM.JsonTools
 build_property.ProjectDir = C:\Users\colin\source\repos\JsonTools\JsonTools\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

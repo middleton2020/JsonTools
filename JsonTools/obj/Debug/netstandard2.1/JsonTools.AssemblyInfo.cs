@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCopyrightAttribute("Colin MIddleton December 2023")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Tools for extracting data from and writng data to JSON objects.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.1.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.1+a0d6e68f232ab5cc8be7c06f8739e2a6961c4ed8")]
 [assembly: System.Reflection.AssemblyProductAttribute("JsonTools")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JsonTools")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.1.0")]

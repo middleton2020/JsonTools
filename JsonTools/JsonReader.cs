@@ -178,6 +178,11 @@ namespace CM.JsonTools
         /// <param name="inpJsonObject">The JSON to read, passed as a string</param>
         private void BreakIntoNodes(string inpJsonObject)
         {
+            if(string.IsNullOrWhiteSpace(inpJsonObject))
+            {
+                throw new ArgumentNullException("No JSON data has been provided.");
+            }
+
             // The escape character so that we can by-pass it.
             const char escapeCharacter = (char)92;
 
@@ -198,156 +203,164 @@ namespace CM.JsonTools
             // Then step through it, character by character.
             foreach (char letter in byCharacters)
             {
-                // Rebuild any quoted strings to make use them properly.
-                if (InString == true)
+                try
                 {
-                    // Close the string.
-                    if (letter == '"')
+                    // Rebuild any quoted strings to make use them properly.
+                    if (InString == true)
                     {
-                        InString = false;
+                        // Close the string.
+                        if (letter == '"')
+                        {
+                            InString = false;
+                        }
+                        else
+                        {
+                            if (Mode == NodeManager.DataMode.Name)
+                            {
+                                Name += letter;
+                            }
+                            else if (Mode == NodeManager.DataMode.Value)
+                            {
+                                Value += letter;
+                            }
+                        }
                     }
                     else
                     {
-                        if (Mode == NodeManager.DataMode.Name)
+                        switch (letter)
                         {
-                            Name += letter;
-                        }
-                        else if (Mode == NodeManager.DataMode.Value)
-                        {
-                            Value += letter;
-                        }
-                    }
-                }
-                else
-                {
-                    switch (letter)
-                    {
-                        case escapeCharacter:
-                            // We simply skip over escape characters.
-                            break;
+                            case escapeCharacter:
+                                // We simply skip over escape characters.
+                                break;
 
-                        // Open a string.
-                        case '"':
-                            if (Mode == NodeManager.DataMode.Value)
-                            {
-                                Type = NodeManager.DataType.String;
-                            }
-                            else
-                            {
-                                Mode = NodeManager.DataMode.Name;
-                            }
-                            InString = true;
-                            break;
-
-                        // The colon indicates that we're moving from name to value.
-                        case ':':
-                            Mode = NodeManager.DataMode.Value;
-                            Type = NodeManager.DataType.Integer;    // Default to this.
-                            Value = "";
-                            break;
-
-                        // Commas separate the elements (i.e. nodes).
-                        case ',':
-                            // We've finished reading the text. If there are no speach marks, but the value is
-                            Type = BooleanCheck(Type, Value);
-                            Type = LongCheck(Type, Value);
-
-                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                            Mode = NodeManager.DataMode.Name;
-                            Name = "";
-                            Value = "";
-                            break;
-
-                        // Start processing a JSON group.
-                        case '{':
-                            Type = NodeManager.DataType.Object;
-                            Value = "";
-                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                            Parent = currentNode.instance;
-                            ParentNode = nodeManager.nodeArray[Parent];
-                            Mode = NodeManager.DataMode.Name;
-                            Type = NodeManager.DataType.Integer;
-                            Name = "";
-                            break;
-
-                        // and close that JSON group.
-                        case '}':
-                            // We've finished reading the text. If there are no speach marks, but the value is
-                            Type = BooleanCheck(Type, Value);
-
-                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                            Type = NodeManager.DataType.ObjectClose;
-                            Name = "";
-                            Value = "";
-                            break;
-
-                        // Start processing an array of data.
-                        case '[':
-                            Type = NodeManager.DataType.Array;
-                            Value = "";
-                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                            Parent = currentNode.instance;
-                            ParentNode = nodeManager.nodeArray[Parent];
-                            Mode = NodeManager.DataMode.Name;
-                            Type = NodeManager.DataType.Integer;
-                            Name = "";
-                            break;
-
-                        // Finish processing the array.
-                        case ']':
-                            // We've finished reading the text. If there are no speach marks, but the value is
-                            Type = BooleanCheck(Type, Value);
-
-                            currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
-                            Type = NodeManager.DataType.ArrayClose;
-                            Name = "";
-                            Value = "";
-                            break;
-
-                        // If we finde a '.' in an integer, change it to a double (or decimal if it is too big).
-                        case '.':
-                            if (Mode == NodeManager.DataMode.Name)
-                            {
-                                Name += letter;
-                            }
-                            else if (Mode == NodeManager.DataMode.Value)
-                            {
-                                Value += letter;
-                                if (Type == NodeManager.DataType.Integer)
+                            // Open a string.
+                            case '"':
+                                if (Mode == NodeManager.DataMode.Value)
                                 {
-                                    Type = NodeManager.DataType.Double;
-                                    // If we've too many decimal places to fit in a double, use a decimal.
-                                    if (Value.Split('.')[1].Length > 9)
+                                    Type = NodeManager.DataType.String;
+                                }
+                                else
+                                {
+                                    Mode = NodeManager.DataMode.Name;
+                                }
+                                InString = true;
+                                break;
+
+                            // The colon indicates that we're moving from name to value.
+                            case ':':
+                                Mode = NodeManager.DataMode.Value;
+                                Type = NodeManager.DataType.Integer;    // Default to this.
+                                Value = "";
+                                break;
+
+                            // Commas separate the elements (i.e. nodes).
+                            case ',':
+                                // We've finished reading the text. If there are no speach marks, but the value is
+                                Type = BooleanCheck(Type, Value);
+                                Type = LongCheck(Type, Value);
+
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                                Mode = NodeManager.DataMode.Name;
+                                Name = "";
+                                Value = "";
+                                break;
+
+                            // Start processing a JSON group.
+                            case '{':
+                                Type = NodeManager.DataType.Object;
+                                Value = "";
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                                Parent = currentNode.instance;
+                                ParentNode = nodeManager.nodeArray[Parent];
+                                Mode = NodeManager.DataMode.Name;
+                                Type = NodeManager.DataType.Integer;
+                                Name = "";
+                                break;
+
+                            // and close that JSON group.
+                            case '}':
+                                // We've finished reading the text. If there are no speach marks, but the value is
+                                Type = BooleanCheck(Type, Value);
+
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                                Type = NodeManager.DataType.ObjectClose;
+                                Name = "";
+                                Value = "";
+                                break;
+
+                            // Start processing an array of data.
+                            case '[':
+                                Type = NodeManager.DataType.Array;
+                                Value = "";
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                                Parent = currentNode.instance;
+                                ParentNode = nodeManager.nodeArray[Parent];
+                                Mode = NodeManager.DataMode.Name;
+                                Type = NodeManager.DataType.Integer;
+                                Name = "";
+                                break;
+
+                            // Finish processing the array.
+                            case ']':
+                                // We've finished reading the text. If there are no speach marks, but the value is
+                                Type = BooleanCheck(Type, Value);
+
+                                currentNode = nodeManager.AddNode(Type, Name, Value, Parent);
+                                Type = NodeManager.DataType.ArrayClose;
+                                Name = "";
+                                Value = "";
+                                break;
+
+                            // If we finde a '.' in an integer, change it to a double (or decimal if it is too big).
+                            case '.':
+                                if (Mode == NodeManager.DataMode.Name)
+                                {
+                                    Name += letter;
+                                }
+                                else if (Mode == NodeManager.DataMode.Value)
+                                {
+                                    Value += letter;
+                                    if (Type == NodeManager.DataType.Integer)
                                     {
-                                        Type = NodeManager.DataType.Decimal;
+                                        Type = NodeManager.DataType.Double;
+                                        // If we've too many decimal places to fit in a double, use a decimal.
+                                        if (Value.Split('.')[1].Length > 9)
+                                        {
+                                            Type = NodeManager.DataType.Decimal;
+                                        }
                                     }
                                 }
-                            }
-                            break;
+                                break;
 
-                        // Any other character is just added to the current details.
-                        default:
-                            if (Mode == NodeManager.DataMode.Name)
-                            {
-                                Name += letter;
-                            }
-                            else if (Mode == NodeManager.DataMode.Value)
-                            {
-                                Value += letter;
-                            }
-                            break;
+                            // Any other character is just added to the current details.
+                            default:
+                                if (Mode == NodeManager.DataMode.Name)
+                                {
+                                    Name += letter;
+                                }
+                                else if (Mode == NodeManager.DataMode.Value)
+                                {
+                                    Value += letter;
+                                }
+                                break;
+                        }
+                    }
+
+                    // If we're closing a JSON element or Array, process that before moving onto the next letter.
+                    if (Type == NodeManager.DataType.ObjectClose || Type == NodeManager.DataType.ArrayClose)
+                    {
+                        ParentNode = nodeManager.nodeArray[Parent];
+                        Name = ParentNode.fieldName;
+                        nodeManager.AddNode(Type, Name, Value, Parent);
+                        Parent = ParentNode.parentNode;
+                        Mode = NodeManager.DataMode.Name;
+                        Type = NodeManager.DataType.None;
                     }
                 }
-
-                // If we're closing a JSON element or Array, process that before moving onto the next letter.
-                if (Type == NodeManager.DataType.ObjectClose || Type == NodeManager.DataType.ArrayClose)
+                catch
                 {
-                    ParentNode = nodeManager.nodeArray[Parent];
-                    Name = ParentNode.fieldName;
-                    nodeManager.AddNode(Type, Name, Value, Parent);
-                    Parent = ParentNode.parentNode;
-                    Mode = NodeManager.DataMode.Name;
-                    Type = NodeManager.DataType.None;
+                    Console.WriteLine($"Current letter = {letter}, In a string? {InString}. We are createing a Node wtih a Mode of {Mode}, a Type of {Type} called {Name} with a value of {Value}");
+                    throw;
                 }
             }
         }
